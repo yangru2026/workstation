@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>培训资料库</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 24px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .search-box input::placeholder { color: #999; }
+        .categories {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .cat-btn {
+            padding: 8px 20px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: white;
+            color: #667eea;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .doc-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s;
+        }
+        .doc-card:hover {
+            transform: translateY(-3px);
+        }
+        .doc-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .type-ppt { background: #fff3e0; color: #e65100; }
+        .type-doc { background: #e3f2fd; color: #1565c0; }
+        .type-video { background: #fce4ec; color: #c2185b; }
+        .type-case { background: #e8f5e9; color: #2e7d32; }
+        .doc-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .doc-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .doc-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .doc-btn {
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .doc-btn:hover { opacity: 0.9; }
+        .add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 培训资料库</h1>
+        <p>售前客服培训资料 · 随时学习提升</p>
+    </div>
+    <div class="search-box">
+        <input type="text" placeholder="搜索资料...">
+    </div>
+    <div class="categories">
+        <button class="cat-btn active">全部</button>
+        <button class="cat-btn">产品知识</button>
+        <button class="cat-btn">销售技巧</button>
+        <button class="cat-btn">案例分析</button>
+        <button class="cat-btn">培训课件</button>
+    </div>
+    <div class="content-grid">
+        <div class="doc-card">
+            <span class="doc-type type-ppt">PPT课件</span>
+            <div class="doc-title">6月售前培训</div>
+            <div class="doc-desc">售前客服能力提升培训课件，包含产品知识、话术技巧、常见问题处理</div>
+            <div class="doc-meta">
+                <span>2026-06-24</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type type-case">案例分析</span>
+            <div class="doc-title">客户投诉处理案例</div>
+            <div class="doc-desc">整理10个典型客户投诉场景及标准处理流程，提升售后应对能力</div>
+            <div class="doc-meta">
+                <span>2026-06-20</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type type-doc">文档</span>
+            <div class="doc-title">美瞳产品参数手册</div>
+            <div class="doc-desc">各品牌美瞳详细参数：直径、基弧、含水量、材质、适用人群</div>
+            <div class="doc-meta">
+                <span>2026-06-15</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type type-video">视频</span>
+            <div class="doc-title">客服沟通技巧培训</div>
+            <div class="doc-desc">售前客服沟通话术、促单技巧、客户关系维护方法</div>
+            <div class="doc-meta">
+                <span>2026-06-10</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type type-doc">文档</span>
+            <div class="doc-title">常见问题回复话术集</div>
+            <div class="doc-desc">整理客服日常高频问题及标准回复话术，支持一键复制</div>
+            <div class="doc-meta">
+                <span>2026-06-05</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type type-ppt">PPT课件</span>
+            <div class="doc-title">新品培训：弥生新款花色</div>
+            <div class="doc-desc">弥生新品花色素材、卖点介绍、推荐话术、对比老款差异</div>
+            <div class="doc-meta">
+                <span>2026-06-01</span>
+                <button class="doc-btn">查看</button>
+            </div>
+        </div>
+    </div>
+    <button class="add-btn" title="添加资料">+</button>
+</body>
+</html>
