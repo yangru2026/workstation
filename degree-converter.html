@@ -1,0 +1,1067 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>寮ョ敓/鏋佹哀 搴︽暟鎹㈢畻</title>
+    <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f1f5f4;
+            min-height: 100vh;
+            padding: 16px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .faq-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .faq-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .faq-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3d5a4d;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0e8e0;
+        }
+        .faq-item {
+            margin-bottom: 10px;
+        }
+        .faq-q {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7ba7a6;
+            margin-bottom: 4px;
+        }
+        .faq-a {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .faq-tip {
+            background: #f5faf8;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .faq-tip strong {
+            color: #3d5a4d;
+        }
+        @media (max-width: 960px) {
+            body { flex-direction: column; align-items: center; }
+            .faq-sidebar { width: 100%; max-width: 600px; }
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .brand-switch {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 12px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .brand-btn {
+            padding: 4px 20px;
+            border: 1px solid #d0ddd8;
+            background: transparent;
+            color: #888;
+            border-radius: 15px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .brand-btn.active {
+            background: #7ba7a6;
+            color: white;
+            font-weight: 600;
+            border-color: #7ba7a6;
+        }
+        .brand-name {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .clear-btn {
+            padding: 4px 14px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .clear-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #7ba7a6;
+            border-radius: 12px;
+            color: white;
+        }
+        .clear-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+        .clear-btn {
+            padding: 4px 14px;
+            background: #fff;
+            border: 1px solid #d0ddd8;
+            color: #888;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .clear-btn:hover {
+            background: #f1f5f4;
+            color: #7ba7a6;
+            border-color: #7ba7a6;
+        }
+
+        /* 鎴浘璇嗗埆鎶樺彔 */
+        .ocr-fold {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .ocr-fold-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        .ocr-fold-header:hover {
+            background: #f5faf8;
+        }
+        .ocr-fold-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3d5a4d;
+        }
+        .ocr-fold-arrow {
+            font-size: 12px;
+            color: #888;
+            transition: transform 0.3s;
+        }
+        .ocr-fold.open .ocr-fold-arrow {
+            transform: rotate(180deg);
+        }
+        .ocr-fold-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .ocr-fold.open .ocr-fold-body {
+            max-height: 400px;
+        }
+        .ocr-fold-inner {
+            padding: 0 16px 16px;
+        }
+        .ocr-upload {
+            border: 2px dashed #d0ddd8;
+            border-radius: 8px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .ocr-upload:hover {
+            border-color: #7ba7a6;
+            background: #f1f5f4;
+        }
+        .ocr-icon { font-size: 28px; margin-bottom: 4px; }
+        .ocr-text { color: #888; font-size: 12px; line-height: 1.5; }
+        .ocr-text strong { color: #7ba7a6; }
+        .ocr-input { display: none; }
+        .ocr-preview { margin-top: 8px; display: none; text-align: center; }
+        .ocr-preview.show { display: block; }
+        .ocr-preview img { max-width: 100%; max-height: 180px; border-radius: 6px; border: 1px solid #d0ddd8; }
+        .ocr-status {
+            margin-top: 8px; padding: 8px 12px; border-radius: 6px;
+            font-size: 12px; display: none;
+        }
+        .ocr-status.show { display: block; }
+        .ocr-status.processing { background: #f1f5f4; color: #7ba7a6; }
+        .ocr-status.success { background: #f0fdf4; color: #15803d; }
+        .ocr-status.error { background: #fef2f2; color: #dc2626; }
+        .ocr-status.localwarn { background: #fffbeb; color: #b45309; }
+        .ocr-raw-text {
+            margin-top: 8px; padding: 8px 12px; background: #f8f5f2;
+            border: 1px solid #d0ddd8; border-radius: 8px; font-size: 11px;
+            color: #888; white-space: pre-wrap; word-break: break-all;
+            max-height: 80px; overflow-y: auto; display: none;
+        }
+        .ocr-raw-text.show { display: block; }
+        .ocr-raw-text::before {
+            content: "馃摑 OCR璇嗗埆鍒扮殑鍘熷鏂囧瓧锛?;
+            display: block; font-weight: 600; color: #666; margin-bottom: 4px;
+        }
+        .ocr-filled-tag {
+            display: inline-block; font-size: 11px; padding: 2px 8px;
+            border-radius: 10px; background: #f0fdf4; color: #15803d;
+            margin-left: 6px; font-weight: 500;
+        }
+
+        /* 宸﹀彸鐪煎苟鎺?*/
+        .eyes-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 480px) {
+            .eyes-row { grid-template-columns: 1fr; }
+        }
+        .eye-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .eye-card-title {
+            font-size: 15px; font-weight: 600; color: #3d5a4d;
+            margin-bottom: 12px; text-align: center;
+            padding-bottom: 8px; border-bottom: 1px solid #f0e8e0;
+        }
+        .eye-input-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .eye-input-row label {
+            font-size: 12px; color: #888; width: 70px; flex-shrink: 0;
+        }
+        .btn-minus, .btn-plus {
+            width: 32px; height: 32px; border: none; background: #fff;
+            color: #7ba7a6; font-size: 16px; border-radius: 6px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #d0ddd8;
+            flex-shrink: 0;
+        }
+        .btn-minus:active, .btn-plus:active { background: #f1f5f4; }
+        .degree-input {
+            width: 60px; height: 32px; background: #fff;
+            border: 1px solid #d0ddd8; border-radius: 6px;
+            color: #333; font-size: 15px; text-align: center;
+            -webkit-appearance: none; flex-shrink: 0;
+        }
+        .degree-input:focus { outline: none; border-color: #7ba7a6; }
+        .eye-result {
+            text-align: center; font-size: 13px; color: #888;
+            margin-top: 8px;
+        }
+        .eye-result span {
+            color: #7ba7a6; font-weight: 600; font-size: 20px;
+        }
+
+        /* 鏈€缁堢粨鏋滄斁澶?*/
+        .final-result-box {
+            background: #7ba7a6;
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .final-result-box .label {
+            font-size: 13px; opacity: 0.9; margin-bottom: 4px;
+        }
+        .final-result-box .degree {
+            font-size: 36px; font-weight: 700; line-height: 1.2;
+        }
+        .final-result-box .eye-label {
+            font-size: 12px; opacity: 0.8; margin-top: 4px;
+        }
+        .final-result-row {
+            display: flex; gap: 12px; justify-content: center;
+        }
+        .final-result-row > div { flex: 1; }
+
+        /* 鎿嶄綔鎸夐挳 */
+        .action-btns {
+            display: flex; gap: 10px; margin-bottom: 16px;
+        }
+        .action-btns button {
+            flex: 1; padding: 12px 0; border: none; border-radius: 20px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+        .btn-copy { background: #7ba7a6; color: white; }
+        .btn-screenshot { background: #7ba7a6; color: white; }
+        .btn-copy:active, .btn-screenshot:active { opacity: 0.9; }
+
+        /* 鎴浘棰勮 */
+        .screenshot-preview {
+            display: none; margin: 0 auto 16px; text-align: center;
+        }
+        .screenshot-preview.show { display: block; }
+        .screenshot-preview img {
+            max-width: 100%; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .screenshot-hint { margin-top: 8px; font-size: 12px; color: #888; }
+
+        /* 鍏朵粬鏍峰紡 */
+        .notes {
+            background: #fff; border-radius: 12px; padding: 14px;
+            font-size: 12px; color: #888; line-height: 1.8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .notes-title { font-weight: 600; color: #3d5a4d; margin-bottom: 6px; font-size: 13px; }
+        .copy-toast {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: rgba(0,0,0,0.7);
+            color: white; padding: 12px 24px; border-radius: 20px;
+            font-size: 14px; z-index: 1000;
+        }
+        .copy-toast.show { display: block; animation: fadeInOut 2s ease; }
+        @keyframes fadeInOut {
+            0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; }
+        }
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 2000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 16px; padding: 28px 24px;
+            max-width: 320px; width: 90%; text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .modal-title { font-size: 17px; font-weight: 600; color: #3d5a4d; margin-bottom: 10px; }
+        .modal-text { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 20px; }
+        .modal-btn { padding: 10px 32px; background: #7ba7a6; color: white; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .watermark { position: fixed; bottom: 10px; right: 10px; font-size: 11px; color: rgba(95, 181, 165, 0.3); pointer-events: none; z-index: 9999; }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="astig-modal">
+        <div class="modal-box">
+            <div style="font-size:40px;margin-bottom:12px;">鈿狅笍</div>
+            <div class="modal-title">鏁ｅ厜搴︽暟杩囬珮</div>
+            <div class="modal-text" id="astig-modal-text">
+                鎮ㄨ緭鍏ョ殑鏁ｅ厜搴︽暟瓒呰繃150搴︼紝鏈伐鍏蜂粎鏀寔150搴︿互涓嬫暎鍏夋崲绠椼€?br><br>
+                寤鸿鍜ㄨ涓撲笟鐪肩鍖荤敓锛屾垨楠岄厤鏁ｅ厜涓撶敤闅愬舰鐪奸暅銆?            </div>
+            <button class="modal-btn" onclick="closeModal()">鎴戠煡閬撲簡</button>
+        </div>
+    </div>
+
+    <div class="watermark" id="watermark">寮ョ敓 鍐呴儴宸ュ叿</div>
+
+    <div class="faq-sidebar" id="faq-left">
+    <div class="faq-card">
+        <h3>馃挕 甯歌闂</h3>
+        <div class="faq-item">
+            <div class="faq-q">Q: 宸﹀彸鐪煎害鏁颁笉鍚屾€庝箞閫夛紵</div>
+            <div class="faq-a">A: 宸﹀彸鐪煎垎鍒€夋嫨瀵瑰簲鐨勫害鏁帮紝涓嶈鍙栧钩鍧囧€笺€?/div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Q: 鏁ｅ厜瓒呰繃200搴︽€庝箞鍔烇紵</div>
+            <div class="faq-a">A: 寤鸿瀹氬埗鏁ｅ厜鐗囷紝鏅€氱編鐬冲彲鑳芥棤娉曠煫姝ｃ€?/div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Q: 娌℃湁鏁ｅ厜鎬庝箞濉紵</div>
+            <div class="faq-a">A: 鏁ｅ厜濉?鍗冲彲锛屽彧濉繎瑙嗗害鏁般€?/div>
+        </div>
+    </div>
+    <div class="faq-tip">
+        <strong>鎹㈢畻瑙勫垯閫熻锛?/strong><br>
+        杩戣搴︽暟 鈮?400锛氬師搴︽暟<br>
+        400-500锛氬噺25搴?br>
+        500-700锛氬噺50搴?br>
+        700-900锛氬噺75搴?br>
+        900浠ヤ笂锛氬噺100搴?    </div>
+</div>
+    <div class="container">
+
+        <div class="brand-switch">
+            <button class="brand-btn active" onclick="switchBrand('寮ョ敓')">寮ョ敓</button>
+            <button class="brand-btn" onclick="switchBrand('鏋佹哀')">鏋佹哀</button>
+        </div>
+
+        <div class="brand-header">
+            <div class="brand-name" id="brandName">寮ョ敓</div>
+        </div>
+
+        <div class="clear-row">
+            <button class="clear-btn" onclick="clearAll()">馃棏锔?娓呯┖</button>
+        </div>
+
+        <!-- 鎴浘璇嗗埆鎶樺彔 -->
+        <div class="ocr-fold" id="ocrFold">
+            <div class="ocr-fold-header" onclick="toggleOCR()">
+                <span class="ocr-fold-title">馃摲 鎴浘璇嗗埆搴︽暟 <span style="font-size:11px;color:#999;font-weight:normal;margin-left:4px;">鈿狅笍 楠屽厜鍗曡瘑鍒笉绋冲畾锛屽缓璁墜鍔ㄨ緭鍏?/span></span>
+                <span class="ocr-fold-arrow" id="ocrArrow">鈻?/span>
+            </div>
+            <div class="ocr-fold-body" id="ocrFoldBody">
+                <div class="ocr-fold-inner">
+                    <div class="ocr-upload" id="ocrUpload">
+                        <div class="ocr-icon">馃摳</div>
+                        <div class="ocr-text">
+                            <strong>鐐瑰嚮涓婁紶</strong> 鎴栨嫋鎷藉浘鐗?br>
+                            涔熸敮鎸?<strong>Ctrl+V</strong> 绮樿创鎴浘
+                        </div>
+                        <input type="file" class="ocr-input" id="ocrInput" accept="image/*">
+                    </div>
+                    <div class="ocr-preview" id="ocrPreview">
+                        <img id="ocrPreviewImg" alt="棰勮">
+                    </div>
+                    <div class="ocr-status" id="ocrStatus"></div>
+                    <div class="ocr-raw-text" id="ocr-raw-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 蹇€熻緭鍏ユ -->
+        <div style="margin: 12px 0;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">鈿?蹇€熻緭鍏ワ紙绮樿创鏂囧瓧/鏁板瓧鑷姩濉厖锛?/div>
+            <input type="text" id="quickInput" placeholder="濡傦細550 75 600 50 鎴?鍙崇溂250 鏁ｅ厜100" 
+                style="width:100%;padding:10px 12px;border:1px solid #d0ddd8;border-radius:8px;font-size:14px;"
+                onpaste="handleQuickPaste(event)">
+        </div>
+
+        <!-- 宸﹀彸鐪煎苟鎺?-->
+        <div class="eyes-row">
+            <div class="eye-card">
+                <div class="eye-card-title">馃憗锔?鍙崇溂</div>
+                <div class="eye-input-row">
+                    <label>杩戣</label>
+                    <button class="btn-minus" onclick="adjust('r-myopia', -25)">鈭?/button>
+                    <input type="number" class="degree-input" id="r-myopia" value="0" onchange="calculate()">
+                    <button class="btn-plus" onclick="adjust('r-myopia', 25)">+</button>
+                </div>
+                <div class="eye-input-row">
+                    <label>鏁ｅ厜</label>
+                    <button class="btn-minus" onclick="adjust('r-astigmatism', -25)">鈭?/button>
+                    <input type="number" class="degree-input" id="r-astigmatism" value="0" onchange="calculate()">
+                    <button class="btn-plus" onclick="adjust('r-astigmatism', 25)">+</button>
+                </div>
+                <div class="eye-result">寤鸿 <span id="r-result">0</span> 搴?/div>
+                <div class="eye-warning" id="r-warning" style="display:none; color:#e74c3c; font-size:11px; text-align:center; margin-top:4px;"></div>
+            </div>
+
+            <div class="eye-card">
+                <div class="eye-card-title">馃憗锔?宸︾溂</div>
+                <div class="eye-input-row">
+                    <label>杩戣</label>
+                    <button class="btn-minus" onclick="adjust('l-myopia', -25)">鈭?/button>
+                    <input type="number" class="degree-input" id="l-myopia" value="0" onchange="calculate()">
+                    <button class="btn-plus" onclick="adjust('l-myopia', 25)">+</button>
+                </div>
+                <div class="eye-input-row">
+                    <label>鏁ｅ厜</label>
+                    <button class="btn-minus" onclick="adjust('l-astigmatism', -25)">鈭?/button>
+                    <input type="number" class="degree-input" id="l-astigmatism" value="0" onchange="calculate()">
+                    <button class="btn-plus" onclick="adjust('l-astigmatism', 25)">+</button>
+                </div>
+                <div class="eye-result">寤鸿 <span id="l-result">0</span> 搴?/div>
+                <div class="eye-warning" id="l-warning" style="display:none; color:#e74c3c; font-size:11px; text-align:center; margin-top:4px;"></div>
+            </div>
+        </div>
+
+        <!-- 鏈€缁堢粨鏋滄斁澶?-->
+        <div class="final-result-box">
+            <div class="final-result-row">
+                <div>
+                    <div class="label">鍙崇溂寤鸿</div>
+                    <div class="degree" id="final-r">0</div>
+                    <div class="eye-label">搴?/div>
+                </div>
+                <div>
+                    <div class="label">宸︾溂寤鸿</div>
+                    <div class="degree" id="final-l">0</div>
+                    <div class="eye-label">搴?/div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 鎿嶄綔鎸夐挳 -->
+        <div class="action-btns">
+            <button class="btn-copy" onclick="copyResult()">馃搵 澶嶅埗鏂囧瓧</button>
+            <button class="btn-screenshot" onclick="generateScreenshot()">馃柤锔?鐢熸垚鍥剧墖</button>
+        </div>
+
+        <div class="screenshot-preview" id="screenshot-preview">
+            <img id="screenshot-img" src="" alt="鎹㈢畻缁撴灉">
+            <div class="screenshot-hint" id="screenshot-hint"></div>
+        </div>
+
+        <div class="notes">
+            <div class="notes-title">鎹㈢畻璇存槑</div>
+            <div>1. 娌℃湁杩戣/骞冲厜閫夋嫨0搴?/div>
+            <div>2. 鍙岀溂浣庝簬400杩戣鏃犻渶鎹㈢畻</div>
+            <div>3. 鏁ｅ厜搴︽暟鑻ュ湪150搴︿互涓婏紝寤鸿浣╂埓涓撲笟鏁ｅ厜闅愬舰</div>
+            <div>4. 姝ら摼鎺ヤ负杩戣/鏁ｅ厜鐨勬祴绠楀弬鑰冿紝闈炶繙瑙?/div>
+            <div>5. 娴嬬畻鍓嶅缓璁厛鍘诲疄浣撶溂绉戞満鏋勮繘琛屼笓涓氶獙鍏夋鏌?/div>
+            <div style="margin-top:6px;color:#aaa;font-size:11px;">鈥?缇庣灣鏈€楂樺彧鏈?00搴?/div>
+        </div>
+    </div>
+
+    <div class="copy-toast" id="copy-toast">宸插鍒?/div>
+
+    <script>
+        let currentBrand = '寮ョ敓';
+
+        function adjust(id, delta) {
+            const input = document.getElementById(id);
+            let val = parseInt(input.value) || 0;
+            val += delta;
+            if (val < 0) val = 0;
+            input.value = val;
+            calculate();
+        }
+
+        function convertDegree(totalDegree) {
+            if (totalDegree <= 400) return totalDegree;
+            else if (totalDegree <= 500) return totalDegree - 25;
+            else if (totalDegree <= 700) return totalDegree - 50;
+            else return totalDegree - 70;
+        }
+
+        const STANDARD_DEGREES = [0, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 650, 700, 750, 800];
+
+        function getStandardDegree(raw) {
+            if (raw <= 0) return 0;
+            if (raw >= 800) return 800;
+            const rounded = Math.round(raw);
+            if (STANDARD_DEGREES.includes(rounded)) return rounded;
+            for (let i = 0; i < STANDARD_DEGREES.length - 1; i++) {
+                if (raw > STANDARD_DEGREES[i] && raw < STANDARD_DEGREES[i + 1]) {
+                    const diff = STANDARD_DEGREES[i + 1] - STANDARD_DEGREES[i];
+                    const mid = diff / 2;
+                    const dist = raw - STANDARD_DEGREES[i];
+                    return dist < mid ? STANDARD_DEGREES[i] : STANDARD_DEGREES[i + 1];
+                }
+            }
+            return 800;
+        }
+
+        function calculate() {
+            const rMyopia = parseFloat(document.getElementById('r-myopia').value) || 0;
+            const lMyopia = parseFloat(document.getElementById('l-myopia').value) || 0;
+            const rAstig = parseFloat(document.getElementById('r-astigmatism').value) || 0;
+            const lAstig = parseFloat(document.getElementById('l-astigmatism').value) || 0;
+
+            // 宸﹀彸鐪兼暎鍏夎鍛婃樉绀?            const rWarn = document.getElementById('r-warning');
+            const lWarn = document.getElementById('l-warning');
+            if (rAstig > 150) { rWarn.textContent = '鈿狅笍 鍙崇溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻'; rWarn.style.display = 'block'; }
+            else { rWarn.style.display = 'none'; }
+            if (lAstig > 150) { lWarn.textContent = '鈿狅笍 宸︾溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻'; lWarn.style.display = 'block'; }
+            else { lWarn.style.display = 'none'; }
+
+            if (rAstig > 150 || lAstig > 150) showModal();
+
+            let rTotal = rMyopia > 0 ? rMyopia + (rAstig > 0 && rAstig <= 150 ? rAstig / 2 : 0) : 0;
+            let lTotal = lMyopia > 0 ? lMyopia + (lAstig > 0 && lAstig <= 150 ? lAstig / 2 : 0) : 0;
+
+            const rResult = getStandardDegree(convertDegree(rTotal));
+            const lResult = getStandardDegree(convertDegree(lTotal));
+
+            document.getElementById('r-result').textContent = rResult;
+            document.getElementById('l-result').textContent = lResult;
+            document.getElementById('final-r').textContent = rResult;
+            document.getElementById('final-l').textContent = lResult;
+        }
+
+        function switchBrand(brand) {
+            currentBrand = brand;
+            document.getElementById('brandName').textContent = brand;
+            document.getElementById('watermark').textContent = brand + ' 鍐呴儴宸ュ叿';
+            document.title = brand + ' 搴︽暟鎹㈢畻';
+            document.querySelectorAll('.brand-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === brand);
+            });
+        }
+
+        function showModal() { document.getElementById('astig-modal').classList.add('show'); }
+        function closeModal() { document.getElementById('astig-modal').classList.remove('show'); }
+
+        function copyResult() {
+            const text = `瀹濆疂 鍙崇溂閫?{document.getElementById('final-r').textContent}搴︼紝宸︾溂閫?{document.getElementById('final-l').textContent}搴;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast('宸插鍒?)).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast(ok ? '宸插鍒? : '澶嶅埗澶辫触锛岃鎵嬪姩澶嶅埗');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('copy-toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        function generateScreenshot() {
+            const rResult = document.getElementById('final-r').textContent;
+            const lResult = document.getElementById('final-l').textContent;
+            const rMyopia = document.getElementById('r-myopia').value || '0';
+            const lMyopia = document.getElementById('l-myopia').value || '0';
+            const rAstig = document.getElementById('r-astigmatism').value || '0';
+            const lAstig = document.getElementById('l-astigmatism').value || '0';
+            const rAstigNum = parseFloat(rAstig) || 0;
+            const lAstigNum = parseFloat(lAstig) || 0;
+            const highAstig = rAstigNum > 150 || lAstigNum > 150;
+            const rHighAstig = rAstigNum > 150;
+            const lHighAstig = lAstigNum > 150;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 400; canvas.height = highAstig ? 520 : 480;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#f1f5f4'; ctx.fillRect(0, 0, 400, 480);
+            ctx.fillStyle = '#7ba7a6'; ctx.fillRect(0, 0, 400, 50);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif';
+            ctx.textAlign = 'center'; ctx.fillText(currentBrand, 200, 22);
+            ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '10px sans-serif';
+            ctx.fillText('瀹樻柟搴︽暟鎹㈢畻宸ュ叿', 200, 42);
+
+            ctx.fillStyle = '#3d5a4d'; ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('搴︽暟鎹㈢畻缁撴灉', 200, 75);
+            ctx.strokeStyle = '#d0ddd8'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(40, 90); ctx.lineTo(360, 90); ctx.stroke();
+
+            ctx.fillStyle = '#888'; ctx.font = '13px sans-serif';
+            ctx.fillText('宸︾溂', 200, 115);
+            ctx.fillStyle = '#7ba7a6'; ctx.font = 'bold 34px sans-serif';
+            ctx.fillText(lResult + '掳', 200, 155);
+
+            ctx.fillStyle = '#888'; ctx.font = '13px sans-serif';
+            ctx.fillText('鍙崇溂', 200, 195);
+            ctx.fillStyle = '#7ba7a6'; ctx.font = 'bold 34px sans-serif';
+            ctx.fillText(rResult + '掳', 200, 235);
+
+            ctx.beginPath(); ctx.moveTo(40, 260); ctx.lineTo(360, 260); ctx.stroke();
+            ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText('宸︾溂锛氳繎瑙?' + lMyopia + '掳' + (lAstig > 0 ? '  鏁ｅ厜 ' + lAstig + '掳' : ''), 40, 285);
+            ctx.fillText('鍙崇溂锛氳繎瑙?' + rMyopia + '掳' + (rAstig > 0 ? '  鏁ｅ厜 ' + rAstig + '掳' : ''), 40, 305);
+
+            ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+            if (highAstig) {
+                // 鏁ｅ厜瓒呰繃150搴﹁鍛婃潯
+                ctx.fillStyle = '#e74c3c'; ctx.fillRect(30, 330, 340, 36);
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif';
+                let warnText = '鈿狅笍 鏁ｅ厜瓒呰繃150搴︼紝寤鸿鍜ㄨ涓撲笟鐪肩鍖荤敓';
+                if (rHighAstig && !lHighAstig) warnText = '鈿狅笍 鍙崇溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
+                else if (lHighAstig && !rHighAstig) warnText = '鈿狅笍 宸︾溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
+                else if (rHighAstig && lHighAstig) warnText = '鈿狅笍 鍙岀溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
+                ctx.fillText(warnText, 200, 352);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif';
+                ctx.fillText('娴嬬畻缁撴灉浠呬緵鍙傝€冿紝寤鸿鍓嶅線涓撲笟鐪肩鏈烘瀯楠屽厜', 200, 450);
+                ctx.fillText(currentBrand + ' 瀹樻柟宸ュ叿', 200, 475);
+                ctx.fillText(new Date().toLocaleDateString('zh-CN'), 200, 495);
+            } else {
+                ctx.fillText('娴嬬畻缁撴灉浠呬緵鍙傝€冿紝寤鸿鍓嶅線涓撲笟鐪肩鏈烘瀯楠屽厜', 200, 410);
+                ctx.fillText(currentBrand + ' 瀹樻柟宸ュ叿', 200, 435);
+                ctx.fillText(new Date().toLocaleDateString('zh-CN'), 200, 455);
+            }
+
+            canvas.toBlob(function(blob) {
+                const dataURL = canvas.toDataURL('image/png');
+                document.getElementById('screenshot-img').src = dataURL;
+                document.getElementById('screenshot-preview').classList.add('show');
+                document.getElementById('screenshot-preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (navigator.clipboard && navigator.clipboard.write && blob) {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+                        document.getElementById('screenshot-hint').textContent = '鉁?鍥剧墖宸插鍒讹紝鍙洿鎺ョ矘璐?;
+                        showToast('鍥剧墖宸插鍒?);
+                    }).catch(() => {
+                        document.getElementById('screenshot-hint').textContent = '鈿狅笍 璇烽暱鎸変笂鏂瑰浘鐗囦繚瀛樺悗鍙戦€?;
+                    });
+                } else {
+                    document.getElementById('screenshot-hint').textContent = '鈿狅笍 璇烽暱鎸変笂鏂瑰浘鐗囦繚瀛樺悗鍙戦€?;
+                }
+            }, 'image/png');
+        }
+
+        // ========== 鎴浘璇嗗埆 ==========
+        function toggleOCR() {
+            document.getElementById('ocrFold').classList.toggle('open');
+        }
+
+        const isLocalFile = window.location.protocol === 'file:';
+        const ocrUpload = document.getElementById('ocrUpload');
+        const ocrInput = document.getElementById('ocrInput');
+        const ocrPreview = document.getElementById('ocrPreview');
+        const ocrPreviewImg = document.getElementById('ocrPreviewImg');
+        const ocrStatus = document.getElementById('ocrStatus');
+
+        ocrUpload.addEventListener('click', () => ocrInput.click());
+        ocrUpload.addEventListener('dragover', e => { e.preventDefault(); ocrUpload.classList.add('dragover'); });
+        ocrUpload.addEventListener('dragleave', () => ocrUpload.classList.remove('dragover'));
+        ocrUpload.addEventListener('drop', e => {
+            e.preventDefault(); ocrUpload.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleOCRImage(e.dataTransfer.files[0]);
+        });
+        ocrInput.addEventListener('change', e => { if (e.target.files.length) handleOCRImage(e.target.files[0]); });
+
+        document.addEventListener('paste', e => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    handleOCRImage(items[i].getAsFile());
+                    e.preventDefault(); break;
+                }
+            }
+        });
+
+        function handleOCRImage(file) {
+            if (!file.type.startsWith('image/')) { showOCRStatus('璇蜂笂浼犲浘鐗囨枃浠?, 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = e => {
+                ocrPreviewImg.src = e.target.result;
+                ocrPreview.classList.add('show');
+                performOCR(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function performOCR(imageData) {
+            if (isLocalFile) {
+                showOCRStatus('鈿狅笍 鏈湴鎵撳紑涓嶆敮鎸佹埅鍥捐瘑鍒紝璇烽儴缃插埌缃戦〉鍚庝娇鐢?, 'localwarn');
+                return;
+            }
+            showOCRStatus('馃攳 姝ｅ湪璇嗗埆鍥剧墖涓殑搴︽暟...', 'processing');
+            try {
+                const result = await Tesseract.recognize(imageData, 'chi_sim+eng', {
+                    logger: m => { if (m.status === 'recognizing text') showOCRStatus(`馃攳 姝ｅ湪璇嗗埆... ${(m.progress * 100).toFixed(0)}%`, 'processing'); }
+                });
+                const extracted = extractDegrees(result.data.text);
+                // 濮嬬粓鏄剧ず鍘熷鏂囧瓧锛屾柟渚胯皟璇?                const rawPreview = document.getElementById('ocr-raw-text');
+                if (rawPreview) {
+                    rawPreview.textContent = extracted.rawText || '(鏃犳枃瀛?';
+                    rawPreview.classList.add('show');
+                }
+                if (extracted.hasData) {
+                    const res = fillInputs(extracted);
+                    if (res.hasInvalid) {
+                        showOCRStatus('鈿狅笍 璇嗗埆鍒板紓甯稿害鏁帮紝璇锋牳瀵瑰師濮嬫枃瀛楀悗鎵嬪姩杈撳叆', 'error');
+                    } else if (res.hasAstigCapped) {
+                        const eyes = res.cappedEyes.join('銆?);
+                        const modalText = document.getElementById('astig-modal-text');
+                        if (modalText) {
+                            modalText.innerHTML = eyes + '鏁ｅ厜搴︽暟瓒呰繃150搴︼紝<strong style="color:#e74c3c;">宸叉寜150搴﹀皝椤舵崲绠?/strong>銆?br><br>璇峰憡鐭ュ鎴?;
+                        }
+                        showModal();
+                        showOCRStatus(`鈿狅笍 ${eyes}鏁ｅ厜瓒?50搴︼紒宸叉寜150搴﹀皝椤舵崲绠梎, 'success');
+                    } else {
+                        showOCRStatus('鉁?璇嗗埆鎴愬姛锛佸凡鑷姩濉叆', 'success');
+                    }
+                    setTimeout(() => calculate(), 300);
+                } else {
+                    showOCRStatus('鈿狅笍 鏈兘璇嗗埆鍒板害鏁帮紝璇锋墜鍔ㄨ緭鍏?, 'error');
+                }
+            } catch (err) {
+                showOCRStatus('鉂?璇嗗埆澶辫触锛? + err.message, 'error');
+            }
+        }
+
+        // 鏀硅繘鐗?OCR 鎻愬彇
+        function extractDegrees(text) {
+            const result = { rMyopia: null, rAstig: null, lMyopia: null, lAstig: null, hasData: false, rawText: text };
+
+            // ========== 绗竴灞傦細鑱婂ぉ鎴浘/鍙ｈ鍖栬В鏋?==========
+            function extractChatDegrees(rawText) {
+                // 缁熶竴绌虹櫧
+                const text = rawText.replace(/[\s\u3000]+/g, ' ').trim();
+                const r = { myopia: null, astig: null };
+                const l = { myopia: null, astig: null };
+
+                // 鏀寔鐨勫叧閿瓧锛堝寘鍚父瑙丱CR璇瘑鍒紝闀跨殑浼樺厛鍖归厤锛?                const RIGHT_EYES = ['鍙崇溂', '鍙?];
+                const LEFT_EYES = ['宸︾溂', '宸ョ溂', '宸?];  // 宸?宸︾殑OCR璇瘑鍒?
+                // 鎻愬彇鏌愪釜鐪肩潧鐨勬暟鎹锛堟壘鍒扮涓€涓尮閰嶅叧閿瘝锛屾埅鍒颁笅涓€涓溂鍏抽敭璇嶄箣鍓嶏級
+                function extractEyeData(eyeKeywords) {
+                    for (const kw of eyeKeywords) {
+                        const idx = text.indexOf(kw);
+                        if (idx === -1) continue;
+                        const start = idx + kw.length;
+                        // 缁撴潫浣嶇疆 = 涓嬩竴涓换浣曠溂鍏抽敭璇?                        const allEyeKeywords = [...RIGHT_EYES, ...LEFT_EYES];
+                        let end = text.length;
+                        for (const ek of allEyeKeywords) {
+                            if (ek === kw) continue;
+                            const eIdx = text.indexOf(ek, start);
+                            if (eIdx !== -1 && eIdx < end) end = eIdx;
+                        }
+                        const segment = text.substring(start, end).trim();
+                        // 鏀寔璐熷彿銆佸皬鏁般€佸眻鍏夊害鏍煎紡锛?6.00 鈫?600锛?                        const nums = segment.match(/[-+]?\d+\.?\d*/g);
+                        if (!nums) return null;
+                        const values = nums.map(n => {
+                            let v = Math.abs(parseFloat(n));
+                            if (v > 0 && v <= 10) v = Math.round(v * 100); // 灞堝厜搴﹁浆搴︽暟
+                            return v;
+                        }).filter(n => n > 0 && n <= 1000);
+                        if (values.length === 0) return null;
+                        return { myopia: values[0], astig: values.length >= 2 ? values[1] : null };
+                    }
+                    return null;
+                }
+
+                const rData = extractEyeData(RIGHT_EYES);
+                if (rData) { r.myopia = rData.myopia; r.astig = rData.astig; }
+
+                const lData = extractEyeData(LEFT_EYES);
+                if (lData) { l.myopia = lData.myopia; l.astig = lData.astig; }
+
+                // 鍏ㄥ眬鏁ｅ厜妫€娴嬶細濡?鏁ｅ厜100""鏁ｅ厜閮?00""涓よ竟鏁ｅ厜100"
+                const astigMatch = text.match(/鏁ｅ厜\D*(\d+\.?\d*)/);
+                if (astigMatch) {
+                    let astigVal = Math.abs(parseFloat(astigMatch[1]));
+                    if (astigVal > 0 && astigVal <= 10) astigVal = Math.round(astigVal * 100);
+                    const ctxStart = Math.max(0, astigMatch.index - 8);
+                    const ctxEnd = Math.min(text.length, astigMatch.index + astigMatch[0].length + 8);
+                    const ctx = text.substring(ctxStart, ctxEnd);
+                    const isBoth = /閮絴涓よ竟|鍙岀溂|涓や釜|宸﹀彸|鍚?.test(ctx);
+                    if (r.astig === null && r.myopia !== null) r.astig = astigVal;
+                    else if (l.astig === null && l.myopia !== null) l.astig = astigVal;
+                    if (isBoth && l.astig === null && l.myopia !== null) l.astig = astigVal;
+                }
+
+                // 鍏ㄥ眬鍏辩敤锛氬弻/閮?涓?鍚?宸﹀彸鐪?鈥?琛ラ綈缂哄け鐨勭溂
+                const isBothEye = /鍙寍閮絴涓鍚剕宸﹀彸/.test(text);
+                if (isBothEye) {
+                    if (r.myopia !== null && l.myopia === null) {
+                        l.myopia = r.myopia; l.astig = r.astig;
+                    } else if (l.myopia !== null && r.myopia === null) {
+                        r.myopia = l.myopia; r.astig = l.astig;
+                    } else if (r.myopia === null && l.myopia === null) {
+                        const nums = text.match(/[-+]?\d+\.?\d*/g);
+                        if (nums) {
+                            const values = nums.map(n => {
+                                let v = Math.abs(parseFloat(n));
+                                if (v > 0 && v <= 10) v = Math.round(v * 100);
+                                return v;
+                            }).filter(n => n > 0 && n <= 1000);
+                            if (values.length >= 1) { r.myopia = values[0]; l.myopia = values[0]; }
+                            if (values.length >= 2) { r.astig = values[1]; l.astig = values[1]; }
+                        }
+                    }
+                }
+
+                // 濡傛灉宸茬粡璇嗗埆鍒板乏鍙崇溂鏁版嵁锛岀洿鎺ヨ繑鍥烇紝閬垮厤绾暟瀛楅€昏緫瑕嗙洊
+                if (r.myopia !== null || l.myopia !== null) {
+                    return { r, l, hasData: true };
+                }
+
+                // 绾暟瀛楀簭鍒楋紝鏃犲乏鍙虫爣娉紝鎸夐『搴忓～鍏?                // "550 75 600 50" 鈫?鍙?550,75) 宸?600,50)
+                const allNums = text.match(/[-+]?\d+\.?\d*/g);
+                if (allNums) {
+                    const nums = allNums.map(n => {
+                        let v = Math.abs(parseFloat(n));
+                        if (v > 0 && v <= 10) v = Math.round(v * 100);
+                        return v;
+                    }).filter(n => n > 0 && n <= 1000);
+                    if (nums.length >= 4) {
+                        r.myopia = nums[0]; r.astig = nums[1];
+                        l.myopia = nums[2]; l.astig = nums[3];
+                    } else if (nums.length === 3) {
+                        r.myopia = nums[0]; l.myopia = nums[1];
+                        // 绗笁涓暟瀛楀彲鑳芥槸鍙岃竟鏁ｅ厜
+                        r.astig = nums[2]; l.astig = nums[2];
+                    } else if (nums.length >= 2) {
+                        r.myopia = nums[0]; l.myopia = nums[1];
+                    }
+                }
+
+                return { r, l, hasData: r.myopia !== null || l.myopia !== null };
+            }
+
+            const chatData = extractChatDegrees(text);
+            if (chatData.hasData) {
+                result.rMyopia = chatData.r.myopia;
+                result.rAstig = chatData.r.astig;
+                result.lMyopia = chatData.l.myopia;
+                result.lAstig = chatData.l.astig;
+                result.hasData = true;
+                return result;
+            }
+            // 楠屽厜鍗曠壒寰侊細姣忎釜鐪肩潧鐨勬暟鎹噸澶嶅琛岋紝绮椾綋琛岋紙绗竴琛岋級涓哄噯
+            // 绛栫暐锛氳繃婊ゆ棤鍏宠鍚庯紝鍙栧墠涓や釜鍖呭惈 >=2 涓?0-10 鏁板瓧鐨勮
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            function isSkipLine(line) {
+                return /S\.E\.|SE\s*[-鈥?]|PD:|鐬宠窛|PD\s*[:锛歖|NO\.|SN:|NAME|鏃ユ湡|鏃堕棿|VD:|CYL:/.test(line);
+            }
+            function parseNums(line) {
+                const m = line.match(/[-+]?\d+\.?\d*/g);
+                if (!m) return [];
+                return m.map(n => parseFloat(n)).filter(n => n > 0 && n <= 1000);
+            }
+
+            const dataRows = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (isSkipLine(line)) continue;
+                const nums = parseNums(line);
+                // 鏁版嵁琛岀壒寰侊細鑷冲皯2涓?0-10 鑼冨洿鐨勬暟瀛楋紙灞堝厜搴?S 鍜?C锛?                const degreeNums = nums.filter(n => n > 0 && n <= 10);
+                if (degreeNums.length >= 2) {
+                    dataRows.push({ myopia: degreeNums[0], astig: degreeNums[1] });
+                    if (dataRows.length >= 2) break; // 鍙彇鍓嶄袱琛?                }
+            }
+
+            if (dataRows.length >= 1) {
+                result.rMyopia = dataRows[0].myopia;
+                result.rAstig = dataRows[0].astig;
+            }
+            if (dataRows.length >= 2) {
+                result.lMyopia = dataRows[1].myopia;
+                result.lAstig = dataRows[1].astig;
+            }
+
+            result.hasData = result.rMyopia !== null || result.lMyopia !== null;
+            return result;
+        }
+
+        function fillInputs(data) {
+            let hasInvalid = false;
+            let cappedEyes = [];
+            function setVal(id, val) {
+                if (val === null) return;
+                if (val > 0 && val <= 10) val = Math.round(val * 100);
+                else if (val > 10 && val < 1000) val = Math.round(val);
+                // 鍚堢悊鎬ф牎楠岋細杩戣搴︽暟涓嶅彲鑳借秴杩?000
+                if (val > 1000) { hasInvalid = true; return; }
+                // 鏁ｅ厜灏侀《150搴︼紝璁板綍鍝釜鐪肩潧
+                if (id.includes('astigmatism') && val > 150) {
+                    val = 150;
+                    const eye = id.startsWith('r') ? '鍙崇溂' : '宸︾溂';
+                    if (!cappedEyes.includes(eye)) cappedEyes.push(eye);
+                }
+                document.getElementById(id).value = val;
+                showFilledTag(id);
+            }
+            setVal('r-myopia', data.rMyopia);
+            setVal('r-astigmatism', data.rAstig);
+            setVal('l-myopia', data.lMyopia);
+            setVal('l-astigmatism', data.lAstig);
+            return { hasInvalid, hasAstigCapped: cappedEyes.length > 0, cappedEyes };
+        }
+
+        function showFilledTag(inputId) {
+            const input = document.getElementById(inputId);
+            const row = input.closest('.eye-input-row');
+            if (row) {
+                const label = row.querySelector('label');
+                if (label && !label.querySelector('.ocr-filled-tag')) {
+                    const tag = document.createElement('span');
+                    tag.className = 'ocr-filled-tag'; tag.textContent = '宸茶瘑鍒?;
+                    label.appendChild(tag);
+                }
+            }
+        }
+
+        function showOCRStatus(msg, type) {
+            ocrStatus.textContent = msg;
+            ocrStatus.className = 'ocr-status show ' + type;
+        }
+
+        function clearAll() {
+            ['r-myopia', 'r-astigmatism', 'l-myopia', 'l-astigmatism'].forEach(id => {
+                document.getElementById(id).value = 0;
+            });
+            document.getElementById('r-result').textContent = '0';
+            document.getElementById('l-result').textContent = '0';
+            document.getElementById('final-r').textContent = '0';
+            document.getElementById('final-l').textContent = '0';
+
+            const preview = document.getElementById('ocrPreview');
+            const previewImg = document.getElementById('ocrPreviewImg');
+            if (preview) preview.classList.remove('show');
+            if (previewImg) previewImg.src = '';
+            if (ocrStatus) { ocrStatus.textContent = ''; ocrStatus.className = 'ocr-status'; }
+            document.querySelectorAll('.ocr-filled-tag').forEach(tag => tag.remove());
+            const rawPreview = document.getElementById('ocr-raw-text');
+            if (rawPreview) rawPreview.classList.remove('show');
+            document.getElementById('screenshot-preview').classList.remove('show');
+            const quickInput = document.getElementById('quickInput');
+            if (quickInput) quickInput.value = '';
+
+            showToast('宸叉竻绌?);
+        }
+
+        calculate();
+        // 蹇€熻緭鍏ヨВ鏋?        function handleQuickPaste(e) {
+            setTimeout(() => {
+                const input = e.target;
+                const text = input.value.trim();
+                if (!text) return;
+                
+                const extracted = extractDegrees(text);
+                if (extracted.hasData) {
+                    const res = fillInputs(extracted);
+                    if (res.hasInvalid) {
+                        showToast('鈿狅笍 妫€娴嬪埌寮傚父搴︽暟锛岃鏍稿');
+                    } else if (res.hasAstigCapped) {
+                        const eyes = res.cappedEyes.join('銆?);
+                        const modalText = document.getElementById('astig-modal-text');
+                        if (modalText) {
+                            modalText.innerHTML = eyes + '鏁ｅ厜搴︽暟瓒呰繃150搴︼紝<strong style="color:#e74c3c;">宸叉寜150搴﹀皝椤舵崲绠?/strong>銆?br><br>璇峰憡鐭ュ鎴?;
+                        }
+                        showModal();
+                        showToast('鈿狅笍 ' + eyes + '鏁ｅ厜瓒?50搴︼紒宸插皝椤?);
+                    } else {
+                        showToast('鉁?宸茶嚜鍔ㄥ～鍏?);
+                    }
+                    setTimeout(() => calculate(), 100);
+                } else {
+                    showToast('鈿狅笍 鏈兘璇嗗埆锛岃妫€鏌ユ牸寮?);
+                }
+            }, 0);
+        }
+
+    </script>
+<div class="faq-sidebar" id="faq-right">
+    <div class="faq-card">
+        <h3>馃搵 甯歌璇濇湳</h3>
+        <div class="faq-item">
+            <div class="faq-q">瀹㈡埛闂細搴︽暟鎬庝箞閫夛紵</div>
+            <div class="faq-a">浜诧紝杩戣搴︽暟鈮?00閫夊師搴︽暟锛?00-500鍑?5搴︼紝500浠ヤ笂姣忓鍔?00鍑?5搴﹀摝~</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">瀹㈡埛闂細鏈夋暎鍏夎兘鎴村悧锛?/div>
+            <div class="faq-a">鏁ｅ厜150搴︿互鍐呭彲浠ユ崲绠楋紝瓒呰繃200搴﹀缓璁畾鍒舵暎鍏夌墖銆?/div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">瀹㈡埛闂細宸﹀彸鐪间笉鍚屾€庝箞鍔烇紵</div>
+            <div class="faq-a">鍙互鎸夊乏鍙崇溂鍒嗗埆閫夋嫨涓嶅悓搴︽暟涓嬪崟锛屼笅鍗曟椂澶囨敞鍗冲彲銆?/div>
+        </div>
+    </div>
+    <div class="faq-tip">
+        <strong>娉ㄦ剰锛?/strong><br>
+        鎹㈢畻缁撴灉浠呬緵鍙傝€冿紝寤鸿瀹㈡埛浠ラ獙鍏夊崟涓哄噯锛岄娆′僵鎴村缓璁挩璇笓涓氶獙鍏夊笀銆?    </div>
+</div>
+</body>
+</html>
+
