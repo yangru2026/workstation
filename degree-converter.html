@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>寮ョ敓/鏋佹哀 搴︽暟鎹㈢畻</title>
+    <title>弥生/极氧 度数换算</title>
     <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,56 +16,6 @@
             display: flex;
             justify-content: center;
             gap: 20px;
-        }
-        .faq-sidebar {
-            width: 220px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .faq-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .faq-card h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #3d5a4d;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f0e8e0;
-        }
-        .faq-item {
-            margin-bottom: 10px;
-        }
-        .faq-q {
-            font-size: 12px;
-            font-weight: 600;
-            color: #7ba7a6;
-            margin-bottom: 4px;
-        }
-        .faq-a {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-        .faq-tip {
-            background: #f5faf8;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.6;
-        }
-        .faq-tip strong {
-            color: #3d5a4d;
-        }
-        @media (max-width: 960px) {
-            body { flex-direction: column; align-items: center; }
-            .faq-sidebar { width: 100%; max-width: 600px; }
         }
         .container {
             max-width: 600px;
@@ -143,7 +93,7 @@
             border-color: #7ba7a6;
         }
 
-        /* 鎴浘璇嗗埆鎶樺彔 */
+        /* 截图识别折叠 */
         .ocr-fold {
             background: #fff;
             border-radius: 12px;
@@ -221,7 +171,7 @@
         }
         .ocr-raw-text.show { display: block; }
         .ocr-raw-text::before {
-            content: "馃摑 OCR璇嗗埆鍒扮殑鍘熷鏂囧瓧锛?;
+            content: "📝 OCR识别到的原始文字：";
             display: block; font-weight: 600; color: #666; margin-bottom: 4px;
         }
         .ocr-filled-tag {
@@ -230,7 +180,7 @@
             margin-left: 6px; font-weight: 500;
         }
 
-        /* 宸﹀彸鐪煎苟鎺?*/
+        /* 左右眼并排 */
         .eyes-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -281,7 +231,7 @@
             color: #7ba7a6; font-weight: 600; font-size: 20px;
         }
 
-        /* 鏈€缁堢粨鏋滄斁澶?*/
+        /* 最终结果放大 */
         .final-result-box {
             background: #7ba7a6;
             border-radius: 16px;
@@ -304,7 +254,7 @@
         }
         .final-result-row > div { flex: 1; }
 
-        /* 鎿嶄綔鎸夐挳 */
+        /* 操作按钮 */
         .action-btns {
             display: flex; gap: 10px; margin-bottom: 16px;
         }
@@ -316,7 +266,7 @@
         .btn-screenshot { background: #7ba7a6; color: white; }
         .btn-copy:active, .btn-screenshot:active { opacity: 0.9; }
 
-        /* 鎴浘棰勮 */
+        /* 截图预览 */
         .screenshot-preview {
             display: none; margin: 0 auto 16px; text-align: center;
         }
@@ -326,7 +276,7 @@
         }
         .screenshot-hint { margin-top: 8px; font-size: 12px; color: #888; }
 
-        /* 鍏朵粬鏍峰紡 */
+        /* 其他样式 */
         .notes {
             background: #fff; border-radius: 12px; padding: 14px;
             font-size: 12px; color: #888; line-height: 1.8;
@@ -358,21 +308,70 @@
         .modal-text { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 20px; }
         .modal-btn { padding: 10px 32px; background: #7ba7a6; color: white; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .watermark { position: fixed; bottom: 10px; right: 10px; font-size: 11px; color: rgba(95, 181, 165, 0.3); pointer-events: none; z-index: 9999; }
+            /* FAQ sidebar */
+        .faq-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+        }
+        .faq-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .faq-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3d5a4d;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0e8e0;
+        }
+        .faq-item { margin-bottom: 10px; }
+        .faq-q {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7ba7a6;
+            margin-bottom: 4px;
+        }
+        .faq-a {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .faq-tip {
+            background: #f5faf8;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .faq-tip strong { color: #3d5a4d; }
+        @media (max-width: 960px) {
+            body { flex-direction: column; align-items: center; }
+            .faq-sidebar { width: 100%; max-width: 600px; }
+        }
     </style>
 </head>
 <body>
     <div class="modal-overlay" id="astig-modal">
         <div class="modal-box">
-            <div style="font-size:40px;margin-bottom:12px;">鈿狅笍</div>
-            <div class="modal-title">鏁ｅ厜搴︽暟杩囬珮</div>
+            <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+            <div class="modal-title">散光度数过高</div>
             <div class="modal-text" id="astig-modal-text">
-                鎮ㄨ緭鍏ョ殑鏁ｅ厜搴︽暟瓒呰繃150搴︼紝鏈伐鍏蜂粎鏀寔150搴︿互涓嬫暎鍏夋崲绠椼€?br><br>
-                寤鸿鍜ㄨ涓撲笟鐪肩鍖荤敓锛屾垨楠岄厤鏁ｅ厜涓撶敤闅愬舰鐪奸暅銆?            </div>
-            <button class="modal-btn" onclick="closeModal()">鎴戠煡閬撲簡</button>
+                您输入的散光度数超过150度，本工具仅支持150度以下散光换算。<br><br>
+                建议咨询专业眼科医生，或验配散光专用隐形眼镜。
+            </div>
+            <button class="modal-btn" onclick="closeModal()">我知道了</button>
         </div>
     </div>
 
-    <div class="watermark" id="watermark">寮ョ敓 鍐呴儴宸ュ叿</div>
+    <div class="watermark" id="watermark">弥生 内部工具</div>
 
     <div class="faq-sidebar" id="faq-left">
     <div class="faq-card">
@@ -401,36 +400,36 @@
     <div class="container">
 
         <div class="brand-switch">
-            <button class="brand-btn active" onclick="switchBrand('寮ョ敓')">寮ョ敓</button>
-            <button class="brand-btn" onclick="switchBrand('鏋佹哀')">鏋佹哀</button>
+            <button class="brand-btn active" onclick="switchBrand('弥生')">弥生</button>
+            <button class="brand-btn" onclick="switchBrand('极氧')">极氧</button>
         </div>
 
         <div class="brand-header">
-            <div class="brand-name" id="brandName">寮ョ敓</div>
+            <div class="brand-name" id="brandName">弥生</div>
         </div>
 
         <div class="clear-row">
-            <button class="clear-btn" onclick="clearAll()">馃棏锔?娓呯┖</button>
+            <button class="clear-btn" onclick="clearAll()">🗑️ 清空</button>
         </div>
 
-        <!-- 鎴浘璇嗗埆鎶樺彔 -->
+        <!-- 截图识别折叠 -->
         <div class="ocr-fold" id="ocrFold">
             <div class="ocr-fold-header" onclick="toggleOCR()">
-                <span class="ocr-fold-title">馃摲 鎴浘璇嗗埆搴︽暟 <span style="font-size:11px;color:#999;font-weight:normal;margin-left:4px;">鈿狅笍 楠屽厜鍗曡瘑鍒笉绋冲畾锛屽缓璁墜鍔ㄨ緭鍏?/span></span>
-                <span class="ocr-fold-arrow" id="ocrArrow">鈻?/span>
+                <span class="ocr-fold-title">📷 截图识别度数 <span style="font-size:11px;color:#999;font-weight:normal;margin-left:4px;">⚠️ 验光单识别不稳定，建议手动输入</span></span>
+                <span class="ocr-fold-arrow" id="ocrArrow">▼</span>
             </div>
             <div class="ocr-fold-body" id="ocrFoldBody">
                 <div class="ocr-fold-inner">
                     <div class="ocr-upload" id="ocrUpload">
-                        <div class="ocr-icon">馃摳</div>
+                        <div class="ocr-icon">📸</div>
                         <div class="ocr-text">
-                            <strong>鐐瑰嚮涓婁紶</strong> 鎴栨嫋鎷藉浘鐗?br>
-                            涔熸敮鎸?<strong>Ctrl+V</strong> 绮樿创鎴浘
+                            <strong>点击上传</strong> 或拖拽图片<br>
+                            也支持 <strong>Ctrl+V</strong> 粘贴截图
                         </div>
                         <input type="file" class="ocr-input" id="ocrInput" accept="image/*">
                     </div>
                     <div class="ocr-preview" id="ocrPreview">
-                        <img id="ocrPreviewImg" alt="棰勮">
+                        <img id="ocrPreviewImg" alt="预览">
                     </div>
                     <div class="ocr-status" id="ocrStatus"></div>
                     <div class="ocr-raw-text" id="ocr-raw-text"></div>
@@ -438,95 +437,95 @@
             </div>
         </div>
 
-        <!-- 蹇€熻緭鍏ユ -->
+        <!-- 快速输入框 -->
         <div style="margin: 12px 0;">
-            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">鈿?蹇€熻緭鍏ワ紙绮樿创鏂囧瓧/鏁板瓧鑷姩濉厖锛?/div>
-            <input type="text" id="quickInput" placeholder="濡傦細550 75 600 50 鎴?鍙崇溂250 鏁ｅ厜100" 
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">⚡ 快速输入（粘贴文字/数字自动填充）</div>
+            <input type="text" id="quickInput" placeholder="如：550 75 600 50 或 右眼250 散光100" 
                 style="width:100%;padding:10px 12px;border:1px solid #d0ddd8;border-radius:8px;font-size:14px;"
                 onpaste="handleQuickPaste(event)">
         </div>
 
-        <!-- 宸﹀彸鐪煎苟鎺?-->
+        <!-- 左右眼并排 -->
         <div class="eyes-row">
             <div class="eye-card">
-                <div class="eye-card-title">馃憗锔?鍙崇溂</div>
+                <div class="eye-card-title">👁️ 右眼</div>
                 <div class="eye-input-row">
-                    <label>杩戣</label>
-                    <button class="btn-minus" onclick="adjust('r-myopia', -25)">鈭?/button>
+                    <label>近视</label>
+                    <button class="btn-minus" onclick="adjust('r-myopia', -25)">−</button>
                     <input type="number" class="degree-input" id="r-myopia" value="0" onchange="calculate()">
                     <button class="btn-plus" onclick="adjust('r-myopia', 25)">+</button>
                 </div>
                 <div class="eye-input-row">
-                    <label>鏁ｅ厜</label>
-                    <button class="btn-minus" onclick="adjust('r-astigmatism', -25)">鈭?/button>
+                    <label>散光</label>
+                    <button class="btn-minus" onclick="adjust('r-astigmatism', -25)">−</button>
                     <input type="number" class="degree-input" id="r-astigmatism" value="0" onchange="calculate()">
                     <button class="btn-plus" onclick="adjust('r-astigmatism', 25)">+</button>
                 </div>
-                <div class="eye-result">寤鸿 <span id="r-result">0</span> 搴?/div>
+                <div class="eye-result">建议 <span id="r-result">0</span> 度</div>
                 <div class="eye-warning" id="r-warning" style="display:none; color:#e74c3c; font-size:11px; text-align:center; margin-top:4px;"></div>
             </div>
 
             <div class="eye-card">
-                <div class="eye-card-title">馃憗锔?宸︾溂</div>
+                <div class="eye-card-title">👁️ 左眼</div>
                 <div class="eye-input-row">
-                    <label>杩戣</label>
-                    <button class="btn-minus" onclick="adjust('l-myopia', -25)">鈭?/button>
+                    <label>近视</label>
+                    <button class="btn-minus" onclick="adjust('l-myopia', -25)">−</button>
                     <input type="number" class="degree-input" id="l-myopia" value="0" onchange="calculate()">
                     <button class="btn-plus" onclick="adjust('l-myopia', 25)">+</button>
                 </div>
                 <div class="eye-input-row">
-                    <label>鏁ｅ厜</label>
-                    <button class="btn-minus" onclick="adjust('l-astigmatism', -25)">鈭?/button>
+                    <label>散光</label>
+                    <button class="btn-minus" onclick="adjust('l-astigmatism', -25)">−</button>
                     <input type="number" class="degree-input" id="l-astigmatism" value="0" onchange="calculate()">
                     <button class="btn-plus" onclick="adjust('l-astigmatism', 25)">+</button>
                 </div>
-                <div class="eye-result">寤鸿 <span id="l-result">0</span> 搴?/div>
+                <div class="eye-result">建议 <span id="l-result">0</span> 度</div>
                 <div class="eye-warning" id="l-warning" style="display:none; color:#e74c3c; font-size:11px; text-align:center; margin-top:4px;"></div>
             </div>
         </div>
 
-        <!-- 鏈€缁堢粨鏋滄斁澶?-->
+        <!-- 最终结果放大 -->
         <div class="final-result-box">
             <div class="final-result-row">
                 <div>
-                    <div class="label">鍙崇溂寤鸿</div>
+                    <div class="label">右眼建议</div>
                     <div class="degree" id="final-r">0</div>
-                    <div class="eye-label">搴?/div>
+                    <div class="eye-label">度</div>
                 </div>
                 <div>
-                    <div class="label">宸︾溂寤鸿</div>
+                    <div class="label">左眼建议</div>
                     <div class="degree" id="final-l">0</div>
-                    <div class="eye-label">搴?/div>
+                    <div class="eye-label">度</div>
                 </div>
             </div>
         </div>
 
-        <!-- 鎿嶄綔鎸夐挳 -->
+        <!-- 操作按钮 -->
         <div class="action-btns">
-            <button class="btn-copy" onclick="copyResult()">馃搵 澶嶅埗鏂囧瓧</button>
-            <button class="btn-screenshot" onclick="generateScreenshot()">馃柤锔?鐢熸垚鍥剧墖</button>
+            <button class="btn-copy" onclick="copyResult()">📋 复制文字</button>
+            <button class="btn-screenshot" onclick="generateScreenshot()">🖼️ 生成图片</button>
         </div>
 
         <div class="screenshot-preview" id="screenshot-preview">
-            <img id="screenshot-img" src="" alt="鎹㈢畻缁撴灉">
+            <img id="screenshot-img" src="" alt="换算结果">
             <div class="screenshot-hint" id="screenshot-hint"></div>
         </div>
 
         <div class="notes">
-            <div class="notes-title">鎹㈢畻璇存槑</div>
-            <div>1. 娌℃湁杩戣/骞冲厜閫夋嫨0搴?/div>
-            <div>2. 鍙岀溂浣庝簬400杩戣鏃犻渶鎹㈢畻</div>
-            <div>3. 鏁ｅ厜搴︽暟鑻ュ湪150搴︿互涓婏紝寤鸿浣╂埓涓撲笟鏁ｅ厜闅愬舰</div>
-            <div>4. 姝ら摼鎺ヤ负杩戣/鏁ｅ厜鐨勬祴绠楀弬鑰冿紝闈炶繙瑙?/div>
-            <div>5. 娴嬬畻鍓嶅缓璁厛鍘诲疄浣撶溂绉戞満鏋勮繘琛屼笓涓氶獙鍏夋鏌?/div>
-            <div style="margin-top:6px;color:#aaa;font-size:11px;">鈥?缇庣灣鏈€楂樺彧鏈?00搴?/div>
+            <div class="notes-title">换算说明</div>
+            <div>1. 没有近视/平光选择0度</div>
+            <div>2. 双眼低于400近视无需换算</div>
+            <div>3. 散光度数若在150度以上，建议佩戴专业散光隐形</div>
+            <div>4. 此链接为近视/散光的测算参考，非远视</div>
+            <div>5. 测算前建议先去实体眼科机构进行专业验光检查</div>
+            <div style="margin-top:6px;color:#aaa;font-size:11px;">• 美瞳最高只有800度</div>
         </div>
     </div>
 
-    <div class="copy-toast" id="copy-toast">宸插鍒?/div>
+    <div class="copy-toast" id="copy-toast">已复制</div>
 
     <script>
-        let currentBrand = '寮ョ敓';
+        let currentBrand = '弥生';
 
         function adjust(id, delta) {
             const input = document.getElementById(id);
@@ -568,11 +567,12 @@
             const rAstig = parseFloat(document.getElementById('r-astigmatism').value) || 0;
             const lAstig = parseFloat(document.getElementById('l-astigmatism').value) || 0;
 
-            // 宸﹀彸鐪兼暎鍏夎鍛婃樉绀?            const rWarn = document.getElementById('r-warning');
+            // 左右眼散光警告显示
+            const rWarn = document.getElementById('r-warning');
             const lWarn = document.getElementById('l-warning');
-            if (rAstig > 150) { rWarn.textContent = '鈿狅笍 鍙崇溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻'; rWarn.style.display = 'block'; }
+            if (rAstig > 150) { rWarn.textContent = '⚠️ 右眼散光过高，按最高150换算'; rWarn.style.display = 'block'; }
             else { rWarn.style.display = 'none'; }
-            if (lAstig > 150) { lWarn.textContent = '鈿狅笍 宸︾溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻'; lWarn.style.display = 'block'; }
+            if (lAstig > 150) { lWarn.textContent = '⚠️ 左眼散光过高，按最高150换算'; lWarn.style.display = 'block'; }
             else { lWarn.style.display = 'none'; }
 
             if (rAstig > 150 || lAstig > 150) showModal();
@@ -592,8 +592,8 @@
         function switchBrand(brand) {
             currentBrand = brand;
             document.getElementById('brandName').textContent = brand;
-            document.getElementById('watermark').textContent = brand + ' 鍐呴儴宸ュ叿';
-            document.title = brand + ' 搴︽暟鎹㈢畻';
+            document.getElementById('watermark').textContent = brand + ' 内部工具';
+            document.title = brand + ' 度数换算';
             document.querySelectorAll('.brand-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.textContent === brand);
             });
@@ -603,9 +603,9 @@
         function closeModal() { document.getElementById('astig-modal').classList.remove('show'); }
 
         function copyResult() {
-            const text = `瀹濆疂 鍙崇溂閫?{document.getElementById('final-r').textContent}搴︼紝宸︾溂閫?{document.getElementById('final-l').textContent}搴;
+            const text = `宝宝 右眼选${document.getElementById('final-r').textContent}度，左眼选${document.getElementById('final-l').textContent}度`;
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => showToast('宸插鍒?)).catch(() => fallbackCopy(text));
+                navigator.clipboard.writeText(text).then(() => showToast('已复制')).catch(() => fallbackCopy(text));
             } else {
                 fallbackCopy(text);
             }
@@ -617,7 +617,7 @@
             document.body.appendChild(ta); ta.select();
             const ok = document.execCommand('copy');
             document.body.removeChild(ta);
-            showToast(ok ? '宸插鍒? : '澶嶅埗澶辫触锛岃鎵嬪姩澶嶅埗');
+            showToast(ok ? '已复制' : '复制失败，请手动复制');
         }
 
         function showToast(msg) {
@@ -648,45 +648,45 @@
             ctx.fillStyle = '#fff'; ctx.font = 'bold 17px sans-serif';
             ctx.textAlign = 'center'; ctx.fillText(currentBrand, 200, 22);
             ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '10px sans-serif';
-            ctx.fillText('瀹樻柟搴︽暟鎹㈢畻宸ュ叿', 200, 42);
+            ctx.fillText('官方度数换算工具', 200, 42);
 
             ctx.fillStyle = '#3d5a4d'; ctx.font = 'bold 16px sans-serif';
-            ctx.fillText('搴︽暟鎹㈢畻缁撴灉', 200, 75);
+            ctx.fillText('度数换算结果', 200, 75);
             ctx.strokeStyle = '#d0ddd8'; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(40, 90); ctx.lineTo(360, 90); ctx.stroke();
 
             ctx.fillStyle = '#888'; ctx.font = '13px sans-serif';
-            ctx.fillText('宸︾溂', 200, 115);
+            ctx.fillText('左眼', 200, 115);
             ctx.fillStyle = '#7ba7a6'; ctx.font = 'bold 34px sans-serif';
-            ctx.fillText(lResult + '掳', 200, 155);
+            ctx.fillText(lResult + '°', 200, 155);
 
             ctx.fillStyle = '#888'; ctx.font = '13px sans-serif';
-            ctx.fillText('鍙崇溂', 200, 195);
+            ctx.fillText('右眼', 200, 195);
             ctx.fillStyle = '#7ba7a6'; ctx.font = 'bold 34px sans-serif';
-            ctx.fillText(rResult + '掳', 200, 235);
+            ctx.fillText(rResult + '°', 200, 235);
 
             ctx.beginPath(); ctx.moveTo(40, 260); ctx.lineTo(360, 260); ctx.stroke();
             ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
-            ctx.fillText('宸︾溂锛氳繎瑙?' + lMyopia + '掳' + (lAstig > 0 ? '  鏁ｅ厜 ' + lAstig + '掳' : ''), 40, 285);
-            ctx.fillText('鍙崇溂锛氳繎瑙?' + rMyopia + '掳' + (rAstig > 0 ? '  鏁ｅ厜 ' + rAstig + '掳' : ''), 40, 305);
+            ctx.fillText('左眼：近视 ' + lMyopia + '°' + (lAstig > 0 ? '  散光 ' + lAstig + '°' : ''), 40, 285);
+            ctx.fillText('右眼：近视 ' + rMyopia + '°' + (rAstig > 0 ? '  散光 ' + rAstig + '°' : ''), 40, 305);
 
             ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
             if (highAstig) {
-                // 鏁ｅ厜瓒呰繃150搴﹁鍛婃潯
+                // 散光超过150度警告条
                 ctx.fillStyle = '#e74c3c'; ctx.fillRect(30, 330, 340, 36);
                 ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif';
-                let warnText = '鈿狅笍 鏁ｅ厜瓒呰繃150搴︼紝寤鸿鍜ㄨ涓撲笟鐪肩鍖荤敓';
-                if (rHighAstig && !lHighAstig) warnText = '鈿狅笍 鍙崇溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
-                else if (lHighAstig && !rHighAstig) warnText = '鈿狅笍 宸︾溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
-                else if (rHighAstig && lHighAstig) warnText = '鈿狅笍 鍙岀溂鏁ｅ厜杩囬珮锛屾寜鏈€楂?50鎹㈢畻';
+                let warnText = '⚠️ 散光超过150度，建议咨询专业眼科医生';
+                if (rHighAstig && !lHighAstig) warnText = '⚠️ 右眼散光过高，按最高150换算';
+                else if (lHighAstig && !rHighAstig) warnText = '⚠️ 左眼散光过高，按最高150换算';
+                else if (rHighAstig && lHighAstig) warnText = '⚠️ 双眼散光过高，按最高150换算';
                 ctx.fillText(warnText, 200, 352);
                 ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif';
-                ctx.fillText('娴嬬畻缁撴灉浠呬緵鍙傝€冿紝寤鸿鍓嶅線涓撲笟鐪肩鏈烘瀯楠屽厜', 200, 450);
-                ctx.fillText(currentBrand + ' 瀹樻柟宸ュ叿', 200, 475);
+                ctx.fillText('测算结果仅供参考，建议前往专业眼科机构验光', 200, 450);
+                ctx.fillText(currentBrand + ' 官方工具', 200, 475);
                 ctx.fillText(new Date().toLocaleDateString('zh-CN'), 200, 495);
             } else {
-                ctx.fillText('娴嬬畻缁撴灉浠呬緵鍙傝€冿紝寤鸿鍓嶅線涓撲笟鐪肩鏈烘瀯楠屽厜', 200, 410);
-                ctx.fillText(currentBrand + ' 瀹樻柟宸ュ叿', 200, 435);
+                ctx.fillText('测算结果仅供参考，建议前往专业眼科机构验光', 200, 410);
+                ctx.fillText(currentBrand + ' 官方工具', 200, 435);
                 ctx.fillText(new Date().toLocaleDateString('zh-CN'), 200, 455);
             }
 
@@ -697,18 +697,18 @@
                 document.getElementById('screenshot-preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 if (navigator.clipboard && navigator.clipboard.write && blob) {
                     navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-                        document.getElementById('screenshot-hint').textContent = '鉁?鍥剧墖宸插鍒讹紝鍙洿鎺ョ矘璐?;
-                        showToast('鍥剧墖宸插鍒?);
+                        document.getElementById('screenshot-hint').textContent = '✅ 图片已复制，可直接粘贴';
+                        showToast('图片已复制');
                     }).catch(() => {
-                        document.getElementById('screenshot-hint').textContent = '鈿狅笍 璇烽暱鎸変笂鏂瑰浘鐗囦繚瀛樺悗鍙戦€?;
+                        document.getElementById('screenshot-hint').textContent = '⚠️ 请长按上方图片保存后发送';
                     });
                 } else {
-                    document.getElementById('screenshot-hint').textContent = '鈿狅笍 璇烽暱鎸変笂鏂瑰浘鐗囦繚瀛樺悗鍙戦€?;
+                    document.getElementById('screenshot-hint').textContent = '⚠️ 请长按上方图片保存后发送';
                 }
             }, 'image/png');
         }
 
-        // ========== 鎴浘璇嗗埆 ==========
+        // ========== 截图识别 ==========
         function toggleOCR() {
             document.getElementById('ocrFold').classList.toggle('open');
         }
@@ -740,7 +740,7 @@
         });
 
         function handleOCRImage(file) {
-            if (!file.type.startsWith('image/')) { showOCRStatus('璇蜂笂浼犲浘鐗囨枃浠?, 'error'); return; }
+            if (!file.type.startsWith('image/')) { showOCRStatus('请上传图片文件', 'error'); return; }
             const reader = new FileReader();
             reader.onload = e => {
                 ocrPreviewImg.src = e.target.result;
@@ -752,64 +752,68 @@
 
         async function performOCR(imageData) {
             if (isLocalFile) {
-                showOCRStatus('鈿狅笍 鏈湴鎵撳紑涓嶆敮鎸佹埅鍥捐瘑鍒紝璇烽儴缃插埌缃戦〉鍚庝娇鐢?, 'localwarn');
+                showOCRStatus('⚠️ 本地打开不支持截图识别，请部署到网页后使用', 'localwarn');
                 return;
             }
-            showOCRStatus('馃攳 姝ｅ湪璇嗗埆鍥剧墖涓殑搴︽暟...', 'processing');
+            showOCRStatus('🔍 正在识别图片中的度数...', 'processing');
             try {
                 const result = await Tesseract.recognize(imageData, 'chi_sim+eng', {
-                    logger: m => { if (m.status === 'recognizing text') showOCRStatus(`馃攳 姝ｅ湪璇嗗埆... ${(m.progress * 100).toFixed(0)}%`, 'processing'); }
+                    logger: m => { if (m.status === 'recognizing text') showOCRStatus(`🔍 正在识别... ${(m.progress * 100).toFixed(0)}%`, 'processing'); }
                 });
                 const extracted = extractDegrees(result.data.text);
-                // 濮嬬粓鏄剧ず鍘熷鏂囧瓧锛屾柟渚胯皟璇?                const rawPreview = document.getElementById('ocr-raw-text');
+                // 始终显示原始文字，方便调试
+                const rawPreview = document.getElementById('ocr-raw-text');
                 if (rawPreview) {
-                    rawPreview.textContent = extracted.rawText || '(鏃犳枃瀛?';
+                    rawPreview.textContent = extracted.rawText || '(无文字)';
                     rawPreview.classList.add('show');
                 }
                 if (extracted.hasData) {
                     const res = fillInputs(extracted);
                     if (res.hasInvalid) {
-                        showOCRStatus('鈿狅笍 璇嗗埆鍒板紓甯稿害鏁帮紝璇锋牳瀵瑰師濮嬫枃瀛楀悗鎵嬪姩杈撳叆', 'error');
+                        showOCRStatus('⚠️ 识别到异常度数，请核对原始文字后手动输入', 'error');
                     } else if (res.hasAstigCapped) {
-                        const eyes = res.cappedEyes.join('銆?);
+                        const eyes = res.cappedEyes.join('、');
                         const modalText = document.getElementById('astig-modal-text');
                         if (modalText) {
-                            modalText.innerHTML = eyes + '鏁ｅ厜搴︽暟瓒呰繃150搴︼紝<strong style="color:#e74c3c;">宸叉寜150搴﹀皝椤舵崲绠?/strong>銆?br><br>璇峰憡鐭ュ鎴?;
+                            modalText.innerHTML = eyes + '散光度数超过150度，<strong style="color:#e74c3c;">已按150度封顶换算</strong>。<br><br>请告知客户';
                         }
                         showModal();
-                        showOCRStatus(`鈿狅笍 ${eyes}鏁ｅ厜瓒?50搴︼紒宸叉寜150搴﹀皝椤舵崲绠梎, 'success');
+                        showOCRStatus(`⚠️ ${eyes}散光超150度！已按150度封顶换算`, 'success');
                     } else {
-                        showOCRStatus('鉁?璇嗗埆鎴愬姛锛佸凡鑷姩濉叆', 'success');
+                        showOCRStatus('✅ 识别成功！已自动填入', 'success');
                     }
                     setTimeout(() => calculate(), 300);
                 } else {
-                    showOCRStatus('鈿狅笍 鏈兘璇嗗埆鍒板害鏁帮紝璇锋墜鍔ㄨ緭鍏?, 'error');
+                    showOCRStatus('⚠️ 未能识别到度数，请手动输入', 'error');
                 }
             } catch (err) {
-                showOCRStatus('鉂?璇嗗埆澶辫触锛? + err.message, 'error');
+                showOCRStatus('❌ 识别失败：' + err.message, 'error');
             }
         }
 
-        // 鏀硅繘鐗?OCR 鎻愬彇
+        // 改进版 OCR 提取
         function extractDegrees(text) {
             const result = { rMyopia: null, rAstig: null, lMyopia: null, lAstig: null, hasData: false, rawText: text };
 
-            // ========== 绗竴灞傦細鑱婂ぉ鎴浘/鍙ｈ鍖栬В鏋?==========
+            // ========== 第一层：聊天截图/口语化解析 ==========
             function extractChatDegrees(rawText) {
-                // 缁熶竴绌虹櫧
+                // 统一空白
                 const text = rawText.replace(/[\s\u3000]+/g, ' ').trim();
                 const r = { myopia: null, astig: null };
                 const l = { myopia: null, astig: null };
 
-                // 鏀寔鐨勫叧閿瓧锛堝寘鍚父瑙丱CR璇瘑鍒紝闀跨殑浼樺厛鍖归厤锛?                const RIGHT_EYES = ['鍙崇溂', '鍙?];
-                const LEFT_EYES = ['宸︾溂', '宸ョ溂', '宸?];  // 宸?宸︾殑OCR璇瘑鍒?
-                // 鎻愬彇鏌愪釜鐪肩潧鐨勬暟鎹锛堟壘鍒扮涓€涓尮閰嶅叧閿瘝锛屾埅鍒颁笅涓€涓溂鍏抽敭璇嶄箣鍓嶏級
+                // 支持的关键字（包含常见OCR误识别，长的优先匹配）
+                const RIGHT_EYES = ['右眼', '右'];
+                const LEFT_EYES = ['左眼', '工眼', '左'];  // 工=左的OCR误识别
+
+                // 提取某个眼睛的数据段（找到第一个匹配关键词，截到下一个眼关键词之前）
                 function extractEyeData(eyeKeywords) {
                     for (const kw of eyeKeywords) {
                         const idx = text.indexOf(kw);
                         if (idx === -1) continue;
                         const start = idx + kw.length;
-                        // 缁撴潫浣嶇疆 = 涓嬩竴涓换浣曠溂鍏抽敭璇?                        const allEyeKeywords = [...RIGHT_EYES, ...LEFT_EYES];
+                        // 结束位置 = 下一个任何眼关键词
+                        const allEyeKeywords = [...RIGHT_EYES, ...LEFT_EYES];
                         let end = text.length;
                         for (const ek of allEyeKeywords) {
                             if (ek === kw) continue;
@@ -817,11 +821,12 @@
                             if (eIdx !== -1 && eIdx < end) end = eIdx;
                         }
                         const segment = text.substring(start, end).trim();
-                        // 鏀寔璐熷彿銆佸皬鏁般€佸眻鍏夊害鏍煎紡锛?6.00 鈫?600锛?                        const nums = segment.match(/[-+]?\d+\.?\d*/g);
+                        // 支持负号、小数、屈光度格式（-6.00 → 600）
+                        const nums = segment.match(/[-+]?\d+\.?\d*/g);
                         if (!nums) return null;
                         const values = nums.map(n => {
                             let v = Math.abs(parseFloat(n));
-                            if (v > 0 && v <= 10) v = Math.round(v * 100); // 灞堝厜搴﹁浆搴︽暟
+                            if (v > 0 && v <= 10) v = Math.round(v * 100); // 屈光度转度数
                             return v;
                         }).filter(n => n > 0 && n <= 1000);
                         if (values.length === 0) return null;
@@ -836,22 +841,22 @@
                 const lData = extractEyeData(LEFT_EYES);
                 if (lData) { l.myopia = lData.myopia; l.astig = lData.astig; }
 
-                // 鍏ㄥ眬鏁ｅ厜妫€娴嬶細濡?鏁ｅ厜100""鏁ｅ厜閮?00""涓よ竟鏁ｅ厜100"
-                const astigMatch = text.match(/鏁ｅ厜\D*(\d+\.?\d*)/);
+                // 全局散光检测：如"散光100""散光都100""两边散光100"
+                const astigMatch = text.match(/散光\D*(\d+\.?\d*)/);
                 if (astigMatch) {
                     let astigVal = Math.abs(parseFloat(astigMatch[1]));
                     if (astigVal > 0 && astigVal <= 10) astigVal = Math.round(astigVal * 100);
                     const ctxStart = Math.max(0, astigMatch.index - 8);
                     const ctxEnd = Math.min(text.length, astigMatch.index + astigMatch[0].length + 8);
                     const ctx = text.substring(ctxStart, ctxEnd);
-                    const isBoth = /閮絴涓よ竟|鍙岀溂|涓や釜|宸﹀彸|鍚?.test(ctx);
+                    const isBoth = /都|两边|双眼|两个|左右|各/.test(ctx);
                     if (r.astig === null && r.myopia !== null) r.astig = astigVal;
                     else if (l.astig === null && l.myopia !== null) l.astig = astigVal;
                     if (isBoth && l.astig === null && l.myopia !== null) l.astig = astigVal;
                 }
 
-                // 鍏ㄥ眬鍏辩敤锛氬弻/閮?涓?鍚?宸﹀彸鐪?鈥?琛ラ綈缂哄け鐨勭溂
-                const isBothEye = /鍙寍閮絴涓鍚剕宸﹀彸/.test(text);
+                // 全局共用：双/都/两/各/左右眼 — 补齐缺失的眼
+                const isBothEye = /双|都|两|各|左右/.test(text);
                 if (isBothEye) {
                     if (r.myopia !== null && l.myopia === null) {
                         l.myopia = r.myopia; l.astig = r.astig;
@@ -871,12 +876,13 @@
                     }
                 }
 
-                // 濡傛灉宸茬粡璇嗗埆鍒板乏鍙崇溂鏁版嵁锛岀洿鎺ヨ繑鍥烇紝閬垮厤绾暟瀛楅€昏緫瑕嗙洊
+                // 如果已经识别到左右眼数据，直接返回，避免纯数字逻辑覆盖
                 if (r.myopia !== null || l.myopia !== null) {
                     return { r, l, hasData: true };
                 }
 
-                // 绾暟瀛楀簭鍒楋紝鏃犲乏鍙虫爣娉紝鎸夐『搴忓～鍏?                // "550 75 600 50" 鈫?鍙?550,75) 宸?600,50)
+                // 纯数字序列，无左右标注，按顺序填充
+                // "550 75 600 50" → 右(550,75) 左(600,50)
                 const allNums = text.match(/[-+]?\d+\.?\d*/g);
                 if (allNums) {
                     const nums = allNums.map(n => {
@@ -889,7 +895,7 @@
                         l.myopia = nums[2]; l.astig = nums[3];
                     } else if (nums.length === 3) {
                         r.myopia = nums[0]; l.myopia = nums[1];
-                        // 绗笁涓暟瀛楀彲鑳芥槸鍙岃竟鏁ｅ厜
+                        // 第三个数字可能是双边散光
                         r.astig = nums[2]; l.astig = nums[2];
                     } else if (nums.length >= 2) {
                         r.myopia = nums[0]; l.myopia = nums[1];
@@ -908,11 +914,11 @@
                 result.hasData = true;
                 return result;
             }
-            // 楠屽厜鍗曠壒寰侊細姣忎釜鐪肩潧鐨勬暟鎹噸澶嶅琛岋紝绮椾綋琛岋紙绗竴琛岋級涓哄噯
-            // 绛栫暐锛氳繃婊ゆ棤鍏宠鍚庯紝鍙栧墠涓や釜鍖呭惈 >=2 涓?0-10 鏁板瓧鐨勮
+            // 验光单特征：每个眼睛的数据重复多行，粗体行（第一行）为准
+            // 策略：过滤无关行后，取前两个包含 >=2 个 0-10 数字的行
             const lines = text.split('\n').map(l => l.trim()).filter(l => l);
             function isSkipLine(line) {
-                return /S\.E\.|SE\s*[-鈥?]|PD:|鐬宠窛|PD\s*[:锛歖|NO\.|SN:|NAME|鏃ユ湡|鏃堕棿|VD:|CYL:/.test(line);
+                return /S\.E\.|SE\s*[-–:]|PD:|瞳距|PD\s*[:：]|NO\.|SN:|NAME|日期|时间|VD:|CYL:/.test(line);
             }
             function parseNums(line) {
                 const m = line.match(/[-+]?\d+\.?\d*/g);
@@ -925,10 +931,12 @@
                 const line = lines[i];
                 if (isSkipLine(line)) continue;
                 const nums = parseNums(line);
-                // 鏁版嵁琛岀壒寰侊細鑷冲皯2涓?0-10 鑼冨洿鐨勬暟瀛楋紙灞堝厜搴?S 鍜?C锛?                const degreeNums = nums.filter(n => n > 0 && n <= 10);
+                // 数据行特征：至少2个 0-10 范围的数字（屈光度 S 和 C）
+                const degreeNums = nums.filter(n => n > 0 && n <= 10);
                 if (degreeNums.length >= 2) {
                     dataRows.push({ myopia: degreeNums[0], astig: degreeNums[1] });
-                    if (dataRows.length >= 2) break; // 鍙彇鍓嶄袱琛?                }
+                    if (dataRows.length >= 2) break; // 只取前两行
+                }
             }
 
             if (dataRows.length >= 1) {
@@ -951,12 +959,12 @@
                 if (val === null) return;
                 if (val > 0 && val <= 10) val = Math.round(val * 100);
                 else if (val > 10 && val < 1000) val = Math.round(val);
-                // 鍚堢悊鎬ф牎楠岋細杩戣搴︽暟涓嶅彲鑳借秴杩?000
+                // 合理性校验：近视度数不可能超过1000
                 if (val > 1000) { hasInvalid = true; return; }
-                // 鏁ｅ厜灏侀《150搴︼紝璁板綍鍝釜鐪肩潧
+                // 散光封顶150度，记录哪个眼睛
                 if (id.includes('astigmatism') && val > 150) {
                     val = 150;
-                    const eye = id.startsWith('r') ? '鍙崇溂' : '宸︾溂';
+                    const eye = id.startsWith('r') ? '右眼' : '左眼';
                     if (!cappedEyes.includes(eye)) cappedEyes.push(eye);
                 }
                 document.getElementById(id).value = val;
@@ -976,7 +984,7 @@
                 const label = row.querySelector('label');
                 if (label && !label.querySelector('.ocr-filled-tag')) {
                     const tag = document.createElement('span');
-                    tag.className = 'ocr-filled-tag'; tag.textContent = '宸茶瘑鍒?;
+                    tag.className = 'ocr-filled-tag'; tag.textContent = '已识别';
                     label.appendChild(tag);
                 }
             }
@@ -1008,11 +1016,12 @@
             const quickInput = document.getElementById('quickInput');
             if (quickInput) quickInput.value = '';
 
-            showToast('宸叉竻绌?);
+            showToast('已清空');
         }
 
         calculate();
-        // 蹇€熻緭鍏ヨВ鏋?        function handleQuickPaste(e) {
+        // 快速输入解析
+        function handleQuickPaste(e) {
             setTimeout(() => {
                 const input = e.target;
                 const text = input.value.trim();
@@ -1022,21 +1031,21 @@
                 if (extracted.hasData) {
                     const res = fillInputs(extracted);
                     if (res.hasInvalid) {
-                        showToast('鈿狅笍 妫€娴嬪埌寮傚父搴︽暟锛岃鏍稿');
+                        showToast('⚠️ 检测到异常度数，请核对');
                     } else if (res.hasAstigCapped) {
-                        const eyes = res.cappedEyes.join('銆?);
+                        const eyes = res.cappedEyes.join('、');
                         const modalText = document.getElementById('astig-modal-text');
                         if (modalText) {
-                            modalText.innerHTML = eyes + '鏁ｅ厜搴︽暟瓒呰繃150搴︼紝<strong style="color:#e74c3c;">宸叉寜150搴﹀皝椤舵崲绠?/strong>銆?br><br>璇峰憡鐭ュ鎴?;
+                            modalText.innerHTML = eyes + '散光度数超过150度，<strong style="color:#e74c3c;">已按150度封顶换算</strong>。<br><br>请告知客户';
                         }
                         showModal();
-                        showToast('鈿狅笍 ' + eyes + '鏁ｅ厜瓒?50搴︼紒宸插皝椤?);
+                        showToast('⚠️ ' + eyes + '散光超150度！已封顶');
                     } else {
-                        showToast('鉁?宸茶嚜鍔ㄥ～鍏?);
+                        showToast('✅ 已自动填充');
                     }
                     setTimeout(() => calculate(), 100);
                 } else {
-                    showToast('鈿狅笍 鏈兘璇嗗埆锛岃妫€鏌ユ牸寮?);
+                    showToast('⚠️ 未能识别，请检查格式');
                 }
             }, 0);
         }
@@ -1064,4 +1073,3 @@
 </div>
 </body>
 </html>
-
