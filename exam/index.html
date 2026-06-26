@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6月售前能力进阶培训 - 在线考试</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background: #f5f7fa;
+  color: #333;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+.header {
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.header h1 { font-size: 22px; font-weight: bold; color: #1a1a2e; margin-bottom: 8px; }
+.header .subtitle { font-size: 14px; color: #666; margin-bottom: 12px; }
+.header .meta {
+  display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+  font-size: 13px; color: #888;
+}
+
+/* Info input */
+.student-info {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.student-info h3 { font-size: 15px; margin-bottom: 16px; color: #1a1a2e; }
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.info-grid label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+.info-grid input {
+  width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+  border-radius: 8px; font-size: 14px; outline: none;
+}
+.info-grid input:focus { border-color: #4a90d9; }
+
+/* Timer */
+.timer-bar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 10px; z-index: 100;
+}
+.timer-bar .timer {
+  font-size: 20px; font-weight: bold; color: #1a1a2e;
+  font-family: 'Courier New', monospace;
+}
+.timer-bar .timer.warning { color: #e74c3c; }
+.timer-bar .progress-text { font-size: 13px; color: #888; }
+
+/* Section */
+.section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.section-title {
+  font-size: 16px; font-weight: bold; color: #1a1a2e;
+  padding-left: 12px; border-left: 4px solid #4a90d9;
+  margin-bottom: 16px;
+}
+.section-desc {
+  font-size: 13px; color: #888; margin-bottom: 16px; padding-left: 16px;
+}
+
+/* Question */
+.question {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #fafbfc;
+  border: 1px solid #f0f0f0;
+}
+.question-text {
+  font-weight: 500; margin-bottom: 10px; font-size: 14px;
+}
+.question-text .q-num {
+  display: inline-block; min-width: 28px; font-weight: bold; color: #4a90d9;
+}
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  cursor: pointer; transition: background 0.2s;
+  font-size: 14px;
+}
+.option:hover { background: #f0f4f8; }
+.option input[type="radio"],
+.option input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: #4a90d9;
+  flex-shrink: 0;
+}
+.option.selected { background: #e8f0fe; border: 1px solid #4a90d9; }
+
+/* True/False */
+.tf-options { display: flex; gap: 16px; }
+.tf-options .option { flex: 1; justify-content: center; }
+
+/* Textarea */
+.essay-textarea {
+  width: 100%; min-height: 120px; padding: 12px;
+  border: 1px solid #ddd; border-radius: 8px;
+  font-size: 14px; font-family: inherit; resize: vertical; outline: none;
+}
+.essay-textarea:focus { border-color: #4a90d9; }
+.essay-textarea.tall { min-height: 160px; }
+
+/* Submit */
+.submit-bar {
+  position: sticky; bottom: 0;
+  background: #fff;
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+  display: flex; justify-content: center;
+  z-index: 100;
+}
+.submit-btn {
+  background: #4a90d9; color: #fff; border: none;
+  padding: 14px 48px; border-radius: 10px; font-size: 16px;
+  cursor: pointer; transition: all 0.2s; font-weight: bold;
+}
+.submit-btn:hover { background: #357abd; }
+.submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* Result */
+.result-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 200;
+  justify-content: center; align-items: center;
+}
+.result-card {
+  background: #fff; border-radius: 16px; padding: 40px;
+  text-align: center; max-width: 400px; width: 90%;
+}
+.result-card h2 { font-size: 24px; margin-bottom: 16px; }
+.result-card .score-big {
+  font-size: 56px; font-weight: bold; color: #4a90d9;
+  font-family: 'Courier New', monospace;
+}
+.result-card .score-pass { color: #27ae60; }
+.result-card .score-fail { color: #e74c3c; }
+.result-card .detail { font-size: 14px; color: #666; margin-top: 16px; line-height: 1.8; }
+.result-card .close-btn {
+  margin-top: 24px; background: #4a90d9; color: #fff;
+  border: none; padding: 12px 32px; border-radius: 8px;
+  font-size: 15px; cursor: pointer;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .container { padding: 10px; }
+  .section { padding: 16px; }
+  .timer-bar { flex-direction: column; gap: 8px; }
+  .header h1 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h1>6月售前能力进阶培训考试</h1>
+  <div class="subtitle">《硅水凝胶产品知识与售前销售转化》</div>
+  <div class="meta">
+    <span>⏱ 限时30分钟</span>
+    <span>💯 满分100分</span>
+    <span>🎯 及格80分</span>
+  </div>
+</div>
+
+<div class="student-info">
+  <h3>👤 考生信息</h3>
+  <div class="info-grid">
+    <div>
+      <label>姓名</label>
+      <input type="text" id="studentName" placeholder="请输入姓名">
+    </div>
+    <div>
+      <label>部门</label>
+      <input type="text" id="studentDept" placeholder="请输入部门">
+    </div>
+  </div>
+</div>
+
+<div class="timer-bar">
+  <span class="progress-text">⏳ 剩余时间</span>
+  <span class="timer" id="timer">30:00</span>
+  <span class="progress-text" id="progress">已答 0 / 24 题</span>
+</div>
+
+<form id="examForm">
+
+<!-- 单选题 -->
+<div class="section">
+  <div class="section-title">一、单选题（每题3分，共30分）</div>
+  <div class="section-desc">请从每题的选项中选出一个正确答案。</div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">1.</span>水凝胶材质主要靠什么给角膜供氧？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q1" value="A"> A. 有机硅成分</label>
+      <label class="option"><input type="radio" name="q1" value="B"> B. 镜片中的水分</label>
+      <label class="option"><input type="radio" name="q1" value="C"> C. 硅胶双通道</label>
+      <label class="option"><input type="radio" name="q1" value="D"> D. 非离子涂层</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">2.</span>硅水凝胶的透氧量是普通水凝胶的多少倍？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q2" value="A"> A. 2-3倍</label>
+      <label class="option"><input type="radio" name="q2" value="B"> B. 5-7倍</label>
+      <label class="option"><input type="radio" name="q2" value="C"> C. 10倍以上</label>
+      <label class="option"><input type="radio" name="q2" value="D"> D. 基本相同</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">3.</span>瑞尔康硅水凝胶产品的透氧量为多少？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q3" value="A"> A. 75 hPa</label>
+      <label class="option"><input type="radio" name="q3" value="B"> B. 100 DK/t</label>
+      <label class="option"><input type="radio" name="q3" value="C"> C. 150 DK/t</label>
+      <label class="option"><input type="radio" name="q3" value="D"> D. 38 DK/t</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">4.</span>视阳（马来西亚）硅水凝胶产品的透氧量为多少？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q4" value="A"> A. 100 DK/t</label>
+      <label class="option"><input type="radio" name="q4" value="B"> B. 112.5 hPa</label>
+      <label class="option"><input type="radio" name="q4" value="C"> C. 150 DK/t</label>
+      <label class="option"><input type="radio" name="q4" value="D"> D. 58 DK/t</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">5.</span>以下哪项是瑞尔康硅水凝胶的含水量？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q5" value="A"> A. 38%</label>
+      <label class="option"><input type="radio" name="q5" value="B"> B. 58%</label>
+      <label class="option"><input type="radio" name="q5" value="C"> C. 47%</label>
+      <label class="option"><input type="radio" name="q5" value="D"> D. 75%</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">6.</span>哪种客户群体更适合硅水凝胶？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q6" value="A"> A. 每天佩戴6小时以内的健康眼</label>
+      <label class="option"><input type="radio" name="q6" value="B"> B. 预算有限、偶尔佩戴的新手</label>
+      <label class="option"><input type="radio" name="q6" value="C"> C. 每天佩戴8小时以上、眼干敏感人群</label>
+      <label class="option"><input type="radio" name="q6" value="D"> D. 只关心花色美观的客户</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">7.</span>销售技巧口诀的第一步是？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q7" value="A"> A. 二解疑虑</label>
+      <label class="option"><input type="radio" name="q7" value="B"> B. 一抓需求</label>
+      <label class="option"><input type="radio" name="q7" value="C"> C. 三给方案</label>
+      <label class="option"><input type="radio" name="q7" value="D"> D. 五促下单</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">8.</span>案例一中，面对"选择困难型客户"的核心成交逻辑是？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q8" value="A"> A. 让客户自己慢慢对比</label>
+      <label class="option"><input type="radio" name="q8" value="B"> B. 帮客户缩小范围，给出明确推荐</label>
+      <label class="option"><input type="radio" name="q8" value="C"> C. 只发图片，让客户自己选</label>
+      <label class="option"><input type="radio" name="q8" value="D"> D. 催促客户尽快下单</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">9.</span>水凝胶透氧量低意味着？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q9" value="A"> A. 镜片不合格，不能使用</label>
+      <label class="option"><input type="radio" name="q9" value="B"> B. 符合国标，只是短时间佩戴足够</label>
+      <label class="option"><input type="radio" name="q9" value="C"> C. 必须被淘汰</label>
+      <label class="option"><input type="radio" name="q9" value="D"> D. 只能卖给新手客户</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">10.</span>非离子（非离子型）是指？</div>
+    <div class="options">
+      <label class="option"><input type="radio" name="q10" value="A"> A. 单独一种化学成分</label>
+      <label class="option"><input type="radio" name="q10" value="B"> B. HEMA + NVP等配合后的效果</label>
+      <label class="option"><input type="radio" name="q10" value="C"> C. 硅水凝胶的别名</label>
+      <label class="option"><input type="radio" name="q10" value="D"> D. 一种高透氧材料</label>
+    </div>
+  </div>
+</div>
+
+<!-- 多选题 -->
+<div class="section">
+  <div class="section-title">二、多选题（每题4分，共20分）</div>
+  <div class="section-desc">每题有两个及以上正确答案，少选得2分，错选不得分。</div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">11.</span>硅水凝胶相比水凝胶的优势有哪些？</div>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="q11" value="A"> A. 透氧量更高，长时间佩戴不容易缺氧</label>
+      <label class="option"><input type="checkbox" name="q11" value="B"> B. 含水量更高，刚戴上更水润</label>
+      <label class="option"><input type="checkbox" name="q11" value="C"> C. 不易吸附蛋白沉淀，不易脏</label>
+      <label class="option"><input type="checkbox" name="q11" value="D"> D. 价格更便宜，性价比更高</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">12.</span>以下哪些情况推荐客户选择硅水凝胶？</div>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="q12" value="A"> A. 每天佩戴8-10小时以上</label>
+      <label class="option"><input type="checkbox" name="q12" value="B"> B. 眼睛敏感、容易干、有红血丝</label>
+      <label class="option"><input type="checkbox" name="q12" value="C"> C. 预算有限，只戴2-3小时</label>
+      <label class="option"><input type="checkbox" name="q12" value="D"> D. 长期佩戴，需要高透氧</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">13.</span>三个优秀案例的共性亮点包括？</div>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="q13" value="A"> A. 预判客户卡点</label>
+      <label class="option"><input type="checkbox" name="q13" value="B"> B. 加速客户决策</label>
+      <label class="option"><input type="checkbox" name="q13" value="C"> C. 前置规避售后问题</label>
+      <label class="option"><input type="checkbox" name="q13" value="D"> D. 让客户自己找答案</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">14.</span>售前销售核心动作包括？</div>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="q14" value="A"> A. 直击痛点，建立信任</label>
+      <label class="option"><input type="checkbox" name="q14" value="B"> B. 拆分下单流程，降低操作难度</label>
+      <label class="option"><input type="checkbox" name="q14" value="C"> C. 精通业务，前置规避售后</label>
+      <label class="option"><input type="checkbox" name="q14" value="D"> D. 等客户问什么再答什么</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">15.</span>瑞尔康硅水凝胶与视阳硅水凝胶的区别正确的是？</div>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="q15" value="A"> A. 瑞尔康硅水透氧量100 DK/t，视阳硅水150 DK/t</label>
+      <label class="option"><input type="checkbox" name="q15" value="B"> B. 瑞尔康硅水含水量58%，视阳硅水含水量47%</label>
+      <label class="option"><input type="checkbox" name="q15" value="C"> C. 两者都是水凝胶材质</label>
+      <label class="option"><input type="checkbox" name="q15" value="D"> D. 视阳硅水用的是SiloxaneMacromer + NVP工艺</label>
+    </div>
+  </div>
+</div>
+
+<!-- 判断题 -->
+<div class="section">
+  <div class="section-title">三、判断题（每题2分，共10分）</div>
+  <div class="section-desc">判断下列说法是否正确，正确选A，错误选B。</div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">16.</span>水凝胶透氧量低，说明镜片不合格，不能销售。</div>
+    <div class="tf-options">
+      <label class="option"><input type="radio" name="q16" value="A"> A. 正确</label>
+      <label class="option"><input type="radio" name="q16" value="B"> B. 错误</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">17.</span>硅水凝胶的生产成本比水凝胶更高，所以价格偏贵。</div>
+    <div class="tf-options">
+      <label class="option"><input type="radio" name="q17" value="A"> A. 正确</label>
+      <label class="option"><input type="radio" name="q17" value="B"> B. 错误</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">18.</span>面对选择困难型客户，应让客户自己慢慢对比，不打扰客户做决策。</div>
+    <div class="tf-options">
+      <label class="option"><input type="radio" name="q18" value="A"> A. 正确</label>
+      <label class="option"><input type="radio" name="q18" value="B"> B. 错误</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">19.</span>非离子是指镜片不易吸附蛋白质、油脂的效果，不是单一成分。</div>
+    <div class="tf-options">
+      <label class="option"><input type="radio" name="q19" value="A"> A. 正确</label>
+      <label class="option"><input type="radio" name="q19" value="B"> B. 错误</label>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">20.</span>客户表示"自己慢慢选"时，客服应及时给出下单指令加速成交。</div>
+    <div class="tf-options">
+      <label class="option"><input type="radio" name="q20" value="A"> A. 正确</label>
+      <label class="option"><input type="radio" name="q20" value="B"> B. 错误</label>
+    </div>
+  </div>
+</div>
+
+<!-- 情景分析题 -->
+<div class="section">
+  <div class="section-title">四、情景分析题（每题10分，共40分）</div>
+  <div class="section-desc">请根据培训内容和销售技巧，写出完整应对逻辑和话术。</div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">21.</span>客户进线询问："硅水凝胶和水凝胶到底有什么区别？"</div>
+    <p style="font-size:13px;color:#888;margin:8px 0 10px 0;">请用极简话术清晰区分两种材质，并引导客户快速决策。</p>
+    <textarea class="essay-textarea" name="q21" placeholder="请输入你的回答..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">22.</span>客户说："水凝胶和硅水凝胶哪个更好？我应该选哪个？"</div>
+    <p style="font-size:13px;color:#888;margin:8px 0 10px 0;">请写出完整的销售流程，包含：①如何问诊收集信息 ②如何判断推荐 ③如何促单。</p>
+    <textarea class="essay-textarea tall" name="q22" placeholder="请输入你的回答..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">23.</span>客户说："网上说硅水凝胶很难摘，我是新手怕摘不下来。"</div>
+    <p style="font-size:13px;color:#888;margin:8px 0 10px 0;">请写出标准应对话术，包含三个要点：①承认顾虑 ②突出改良工艺 ③降低试错恐惧。</p>
+    <textarea class="essay-textarea tall" name="q23" placeholder="请输入你的回答..."></textarea>
+  </div>
+
+  <div class="question">
+    <div class="question-text"><span class="q-num">24.</span>客户是选择困难型，在两款花色之间反复纠结，发来对比图让你帮忙选。</div>
+    <p style="font-size:13px;color:#888;margin:8px 0 10px 0;">请结合销售技巧口诀（一抓需求→二解疑虑→三给方案→四拆步骤→五促下单→六控售后），写出你的接待流程（至少包含3个关键步骤）。</p>
+    <textarea class="essay-textarea tall" name="q24" placeholder="请输入你的回答..."></textarea>
+  </div>
+</div>
+
+</form>
+
+</div>
+
+<!-- Submit Bar -->
+<div class="submit-bar">
+  <button class="submit-btn" id="submitBtn" onclick="submitExam()">提交答卷</button>
+</div>
+
+<!-- Result Modal -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card">
+    <h2>🎉 考试完成</h2>
+    <div class="score-big" id="scoreDisplay">0</div>
+    <div class="detail" id="scoreDetail"></div>
+    <button class="close-btn" onclick="closeResult()">关闭</button>
+  </div>
+</div>
+
+<script>
+// Timer
+let totalSeconds = 30 * 60;
+let timerInterval;
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    totalSeconds--;
+    if (totalSeconds <= 0) {
+      clearInterval(timerInterval);
+      submitExam();
+      return;
+    }
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    document.getElementById('timer').textContent = 
+      String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    if (totalSeconds < 300) {
+      document.getElementById('timer').classList.add('warning');
+    }
+  }, 1000);
+}
+
+// Answer tracking
+function updateProgress() {
+  let answered = 0;
+  for (let i = 1; i <= 24; i++) {
+    const name = 'q' + i;
+    const els = document.getElementsByName(name);
+    if (els.length > 0) {
+      for (const el of els) {
+        if (el.type === 'radio' && el.checked) { answered++; break; }
+        if (el.type === 'checkbox' && el.checked) { answered++; break; }
+      }
+    }
+  }
+  document.getElementById('progress').textContent = '已答 ' + answered + ' / 24 题';
+}
+
+// Auto-grade
+const answers = {
+  q1: 'B', q2: 'B', q3: 'B', q4: 'C', q5: 'B', q6: 'C', q7: 'B', q8: 'B', q9: 'B', q10: 'B',
+  q16: 'B', q17: 'A', q18: 'B', q19: 'A', q20: 'A'
+};
+const multiAnswers = {
+  q11: ['A','C'], q12: ['A','B','D'], q13: ['A','B','C'], q14: ['A','B','C'], q15: ['A','B','D']
+};
+
+function submitExam() {
+  clearInterval(timerInterval);
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '评分中...';
+
+  let score = 0;
+  let correct = 0;
+  let wrong = 0;
+
+  // Single choice
+  for (let i = 1; i <= 10; i++) {
+    const name = 'q' + i;
+    const selected = document.querySelector('input[name="' + name + '"]:checked');
+    if (selected && selected.value === answers[name]) {
+      score += 3; correct++;
+    } else if (selected) {
+      wrong++;
+    }
+  }
+
+  // Multi choice
+  for (let i = 11; i <= 15; i++) {
+    const name = 'q' + i;
+    const selected = Array.from(document.querySelectorAll('input[name="' + name + '"]')).filter(el => el.checked).map(el => el.value);
+    const correctAns = multiAnswers[name];
+    if (selected.length > 0) {
+      const allCorrect = selected.every(v => correctAns.includes(v));
+      const someCorrect = selected.some(v => correctAns.includes(v));
+      if (allCorrect && selected.length === correctAns.length) {
+        score += 4; correct++;
+      } else if (someCorrect && !selected.some(v => !correctAns.includes(v))) {
+        score += 2; correct++;
+      } else {
+        wrong++;
+      }
+    }
+  }
+
+  // True/False
+  for (let i = 16; i <= 20; i++) {
+    const name = 'q' + i;
+    const selected = document.querySelector('input[name="' + name + '"]:checked');
+    if (selected && selected.value === answers[name]) {
+      score += 2; correct++;
+    } else if (selected) {
+      wrong++;
+    }
+  }
+
+  // Essay questions (auto 0, need manual review)
+  const essayCount = 4;
+  let essayAnswered = 0;
+  for (let i = 21; i <= 24; i++) {
+    const val = document.querySelector('textarea[name="q' + i + '"]').value.trim();
+    if (val.length > 0) essayAnswered++;
+  }
+
+  const passed = score >= 80;
+  const display = document.getElementById('scoreDisplay');
+  display.textContent = score;
+  display.className = 'score-big ' + (passed ? 'score-pass' : 'score-fail');
+
+  document.getElementById('scoreDetail').innerHTML =
+    '客观题得分：' + score + ' 分（满分60分）<br>' +
+    '简答题：' + essayAnswered + ' / 4 题已作答（简答题需人工评阅，满分40分）<br>' +
+    '当前状态：' + (passed ? '✅ 客观题已达标' : '⚠️ 客观题暂' + score + '分，需加把劲') + '<br><br>' +
+    '简答题将由培训负责人统一批改，请截图保存你的答卷编号。';
+
+  document.getElementById('resultOverlay').style.display = 'flex';
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').style.display = 'none';
+}
+
+// Track progress
+for (let i = 1; i <= 24; i++) {
+  const name = 'q' + i;
+  const els = document.getElementsByName(name);
+  for (const el of els) {
+    el.addEventListener('change', updateProgress);
+  }
+}
+
+// Textarea tracking
+for (let i = 21; i <= 24; i++) {
+  const ta = document.querySelector('textarea[name="q' + i + '"]');
+  if (ta) ta.addEventListener('input', updateProgress);
+}
+
+// Warning before leaving
+window.addEventListener('beforeunload', (e) => {
+  if (totalSeconds > 0 && totalSeconds < 30 * 60) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+startTimer();
+updateProgress();
+</script>
+
+</body>
+</html>
