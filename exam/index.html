@@ -469,6 +469,11 @@ body {
     <h2>🎉 考试完成</h2>
     <div class="score-big" id="scoreDisplay">0</div>
     <div class="detail" id="scoreDetail"></div>
+    <div style="margin-top:16px; background:#f0f4f8; padding:12px; border-radius:8px; text-align:left;">
+      <div style="font-size:13px; font-weight:bold; color:#333; margin-bottom:8px;">📋 答卷已自动复制，请直接粘贴发给培训负责人</div>
+      <textarea id="answerText" style="width:100%; height:120px; font-size:12px; border:1px solid #ddd; border-radius:6px; padding:8px;" readonly></textarea>
+      <button onclick="copyAnswers()" style="margin-top:8px; background:#4a90d9; color:#fff; border:none; padding:8px 20px; border-radius:6px; font-size:13px; cursor:pointer;">重新复制答卷</button>
+    </div>
     <button class="close-btn" onclick="closeResult()">关闭</button>
   </div>
 </div>
@@ -579,6 +584,58 @@ function submitExam() {
     if (val.length > 0) essayAnswered++;
   }
 
+  // Collect all answers for clipboard
+  const name = document.getElementById('studentName').value.trim() || '未填写';
+  const dept = document.getElementById('studentDept').value.trim() || '未填写';
+  let answerText = '======== 6月售前培训考试答卷 ========\n';
+  answerText += '姓名：' + name + '\n';
+  answerText += '部门：' + dept + '\n';
+  answerText += '客观题得分：' + score + '/60 分\n';
+  answerText += '================================\n\n';
+
+  // Single choice answers
+  answerText += '【单选题】\n';
+  for (let i = 1; i <= 10; i++) {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    answerText += '第' + i + '题：' + (selected ? selected.value : '未作答') + '\n';
+  }
+
+  // Multi choice answers
+  answerText += '\n【多选题】\n';
+  for (let i = 11; i <= 15; i++) {
+    const selected = Array.from(document.querySelectorAll('input[name="q' + i + '"]:checked')).map(el => el.value);
+    answerText += '第' + i + '题：' + (selected.length > 0 ? selected.join('、') : '未作答') + '\n';
+  }
+
+  // True/False answers
+  answerText += '\n【判断题】\n';
+  for (let i = 16; i <= 20; i++) {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    answerText += '第' + i + '题：' + (selected ? selected.value : '未作答') + '\n';
+  }
+
+  // Essay answers
+  answerText += '\n【简答题】\n';
+  for (let i = 21; i <= 24; i++) {
+    const val = document.querySelector('textarea[name="q' + i + '"]').value.trim();
+    answerText += '\n第' + i + '题：\n' + (val || '未作答') + '\n';
+  }
+
+  answerText += '\n================================\n';
+  answerText += '提交时间：' + new Date().toLocaleString('zh-CN') + '\n';
+
+  // Auto copy to clipboard
+  document.getElementById('answerText').value = answerText;
+  try {
+    navigator.clipboard.writeText(answerText).then(() => {
+      console.log('Answers copied to clipboard');
+    }).catch(err => {
+      console.log('Auto copy failed:', err);
+    });
+  } catch(e) {
+    console.log('Clipboard API not available');
+  }
+
   const passed = score >= 80;
   const display = document.getElementById('scoreDisplay');
   display.textContent = score;
@@ -588,12 +645,21 @@ function submitExam() {
     '客观题得分：' + score + ' 分（满分60分）<br>' +
     '简答题：' + essayAnswered + ' / 4 题已作答（简答题需人工评阅，满分40分）<br>' +
     '当前状态：' + (passed ? '✅ 客观题已达标' : '⚠️ 客观题暂' + score + '分，需加把劲') + '<br><br>' +
-    '简答题将由培训负责人统一批改，请截图保存你的答卷编号。';
+    '<b>📋 下方答卷内容已自动复制，请直接粘贴发给培训负责人！</b>';
 
   document.getElementById('resultOverlay').style.display = 'flex';
 
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyAnswers() {
+  const text = document.getElementById('answerText').value;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('答卷已复制！请粘贴发送。');
+  }).catch(() => {
+    alert('复制失败，请手动选中下方文本复制。');
+  });
 }
 
 function closeResult() {
