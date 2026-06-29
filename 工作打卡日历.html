@@ -28,7 +28,8 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 .progress-text { font-size:12px; color:rgba(255,255,255,.8); margin-top:6px; display:flex; justify-content:space-between; }
 
 .main-layout { display:flex; gap:12px; padding:12px; max-width:1400px; margin:0 auto; }
-.sidebar { width:280px; flex-shrink:0; }
+.sidebar { width:100%; flex-shrink:0; }
+.sidebar-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .calendar-area { flex:1; min-width:0; }
 
 .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -138,7 +139,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 
 @media(max-width:900px){
   .main-layout { flex-direction:column; padding:8px; }
-  .sidebar { width:100%; }
+  .sidebar-grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -170,6 +171,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 
 <div class="main-layout">
 <div class="sidebar">
+<div class="sidebar-grid">
 <div class="card">
 <h3>📋 工作模板库</h3>
 <div class="template-list" id="templateList"></div>
@@ -178,6 +180,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 <h3>➕ 单个任务</h3>
 <div class="single-task-list" id="singleTasks"></div>
 <button class="add-single-btn" onclick="addCheckedSingleTasks()">✅ 添加勾选到今日</button>
+</div>
 </div>
 </div>
 
