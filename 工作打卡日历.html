@@ -311,7 +311,7 @@ document.getElementById('templateModalOverlay').classList.add('active');
 }
 function closeTemplateModal(event){if(!event||event.target===document.getElementById('templateModalOverlay'))document.getElementById('templateModalOverlay').classList.remove('active');}
 function applyTemplate(idx){
-if(!selectedDate){alert('请先选择一个日期');return;}
+if(!selectedDate){selectedDate=formatDate(new Date());}
 const t=TEMPLATES[idx];const tasks=getTasks(selectedDate);
 t.tasks.forEach(task=>tasks.push({text:task,done:false,priority:'p2',type:t.tags[0],repeat:false}));
 saveTasks(selectedDate,tasks);renderTasks();renderCalendar();closeTemplateModal();
