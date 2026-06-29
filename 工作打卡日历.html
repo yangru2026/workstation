@@ -28,8 +28,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 .progress-text { font-size:12px; color:rgba(255,255,255,.8); margin-top:6px; display:flex; justify-content:space-between; }
 
 .main-layout { display:flex; gap:12px; padding:12px; max-width:1400px; margin:0 auto; }
-.sidebar { width:100%; flex-shrink:0; }
-.sidebar-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.sidebar { width:260px; flex-shrink:0; }
 .calendar-area { flex:1; min-width:0; }
 
 .card { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -58,11 +57,11 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 .day-cell .dot.y { background:var(--yellow); }
 .day-cell .dot.g { background:var(--green); }
 
-.template-list { display:flex; flex-direction:column; gap:8px; }
-.template-item { padding:12px; background:#f8f9fa; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:all .2s; }
+.template-list { display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto; }
+.template-item { padding:10px; background:#f8f9fa; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:all .2s; }
 .template-item:hover { border-color:var(--primary); background:#f0f7ff; }
-.template-item .t-name { font-size:14px; font-weight:600; margin-bottom:4px; }
-.template-item .t-tasks { font-size:11px; color:var(--text2); line-height:1.6; }
+.template-item .t-name { font-size:13px; font-weight:600; margin-bottom:3px; }
+.template-item .t-tasks { font-size:11px; color:var(--text2); line-height:1.5; }
 .template-item .t-tag { display:inline-block; padding:1px 6px; border-radius:8px; font-size:10px; background:rgba(52,152,219,.1); color:var(--blue); margin-right:4px; margin-top:4px; }
 
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; justify-content:center; align-items:center; z-index:100; }
@@ -129,7 +128,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 .page { display:none; padding-bottom:60px; }
 .page.active { display:block; }
 
-.single-task-list { display:flex; flex-direction:column; gap:3px; }
+.single-task-list { display:flex; flex-direction:column; gap:3px; max-height:260px; overflow-y:auto; }
 .single-task-item { display:flex; align-items:center; padding:4px 6px; background:#f8f9fa; border-radius:6px; font-size:12px; cursor:pointer; gap:6px; }
 .single-task-item:hover { background:#e8f4f8; }
 .single-task-item input { width:14px; height:14px; accent-color:var(--primary); }
@@ -139,7 +138,7 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 
 @media(max-width:900px){
   .main-layout { flex-direction:column; padding:8px; }
-  .sidebar-grid { grid-template-columns:1fr; }
+  .sidebar { width:100%; }
 }
 </style>
 </head>
@@ -171,7 +170,6 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 
 <div class="main-layout">
 <div class="sidebar">
-<div class="sidebar-grid">
 <div class="card">
 <h3>📋 工作模板库</h3>
 <div class="template-list" id="templateList"></div>
@@ -180,7 +178,6 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 <h3>➕ 单个任务</h3>
 <div class="single-task-list" id="singleTasks"></div>
 <button class="add-single-btn" onclick="addCheckedSingleTasks()">✅ 添加勾选到今日</button>
-</div>
 </div>
 </div>
 
