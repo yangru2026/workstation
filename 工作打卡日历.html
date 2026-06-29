@@ -132,7 +132,7 @@ body{font-family:"Microsoft YaHei",sans-serif;background:var(--bg);min-height:10
 <button onclick="showTemplateModal()">📋 模板库</button>
 <button onclick="showRepeatModal()">🔄 重复任务</button>
 <button onclick="exportData()">💾 导出</button>
-<button onclick="importData()">📂 导入</button>
+<button onclick="clearAllData()">🗑️ 清空</button>
 </div>
 
 <div class="page active" id="page-calendar">
@@ -414,6 +414,12 @@ function importData(){
 const input=document.createElement('input');input.type='file';input.accept='.json';
 input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);Object.entries(data).forEach(([k,v])=>{if(k.startsWith('workPro'))localStorage.setItem(k,v);});renderCalendar();showPage('calendar');alert('导入成功');}catch(err){alert('导入失败：文件格式错误');}};reader.readAsText(file);};
 input.click();
+}
+function clearAllData(){
+if(!confirm('确定要清空所有数据吗？此操作不可恢复！'))return;
+const keys=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key.startsWith('workPro'))keys.push(key);}
+keys.forEach(k=>localStorage.removeItem(k));
+renderCalendar();showPage('calendar');alert('已清空所有数据');
 }
 
 function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();}
