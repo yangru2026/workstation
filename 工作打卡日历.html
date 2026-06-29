@@ -35,7 +35,14 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 .card h3 { font-size:14px; margin-bottom:10px; display:flex; align-items:center; gap:6px; color:var(--primary); }
 
 .weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
-.weekdays div { text-align:center; font-size:13px; color:var(--text); padding:6px 0; font-weight:700; }
+.weekdays div { text-align:center; font-size:12px; color:#fff; padding:5px 0; font-weight:700; border-radius:6px; }
+.weekdays div:nth-child(1) { background:#e74c3c; }
+.weekdays div:nth-child(2) { background:#3498db; }
+.weekdays div:nth-child(3) { background:#3498db; }
+.weekdays div:nth-child(4) { background:#3498db; }
+.weekdays div:nth-child(5) { background:#3498db; }
+.weekdays div:nth-child(6) { background:#3498db; }
+.weekdays div:nth-child(7) { background:#e67e22; }
 .days { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
 .day-cell { aspect-ratio:1.1; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; border:2px solid transparent; position:relative; font-size:12px; background:var(--card); }
 .day-cell:hover { background:#e8f4f8; }
@@ -220,7 +227,12 @@ body { font-family:"Microsoft YaHei",sans-serif; background:var(--bg); min-heigh
 <select id="typeSelect"><option value="">类型</option><option value="培训">培训</option><option value="质检">质检</option><option value="数据分析">数据分析</option><option value="团队管理">团队管理</option><option value="排班考勤">排班考勤</option><option value="扣罚奖励">扣罚奖励</option><option value="日常">日常</option></select>
 </div>
 <div id="taskContainer"></div>
-<div class="add-task"><input type="text" id="newTaskInput" placeholder="或手动输入任务..." onkeypress="if(event.key==='Enter')addTask()"><button onclick="goToSingleTasks()">➕ 添加单个任务</button></div>
+<div style="margin:6px 0;"><button onclick="toggleModalSingle()" style="width:100%;padding:6px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;">➕ 展开单个任务</button></div>
+<div id="modalSingleTasks" style="display:none;margin-bottom:6px;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;" id="modalSingleList"></div>
+<button onclick="addModalSingleTasks()" style="width:100%;margin-top:4px;padding:6px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">✅ 添加勾选</button>
+</div>
+<div class="add-task"><input type="text" id="newTaskInput" placeholder="或手动输入..." onkeypress="if(event.key==='Enter')addTask()"><button onclick="addTask()">添加</button></div>
 <div class="review-box">
 <label>💡 今日收获</label><textarea id="reviewGain" placeholder="学到了什么..."></textarea>
 <label>⚠️ 遇到的问题</label><textarea id="reviewProblem" placeholder="遇到了什么问题..."></textarea>
@@ -322,8 +334,31 @@ document.getElementById('reviewProblem').value=review.problem;
 document.getElementById('reviewImprove').value=review.improve;
 renderTasks();
 renderModalTemplates();
+document.getElementById('modalSingleTasks').style.display='none';
+renderModalSingleTasks();
 document.getElementById('modalOverlay').classList.add('active');
 document.getElementById('newTaskInput').focus();
+}
+
+function renderModalSingleTasks(){
+const container=document.getElementById('modalSingleList');
+container.innerHTML=SINGLE_TASKS.map((t,i)=>`<label style="display:flex;align-items:center;gap:4px;padding:4px 6px;background:var(--bg);border-radius:6px;font-size:11px;cursor:pointer;"><input type="checkbox" id="ms${i}" value="${t}" style="width:13px;height:13px;">${t}</label>`).join('');
+}
+
+function toggleModalSingle(){
+const el=document.getElementById('modalSingleTasks');
+el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function addModalSingleTasks(){
+if(!selectedDate)return;
+const tasks=getTasks(selectedDate);
+let added=0;
+SINGLE_TASKS.forEach((t,i)=>{
+const cb=document.getElementById('ms'+i);
+if(cb&&cb.checked){tasks.push({text:t,done:false,priority:'p3',type:'日常'});cb.checked=false;added++;}
+});
+if(added>0){saveTasks(selectedDate,tasks);renderTasks();renderCalendar();}
 }
 
 function renderModalTemplates(){
@@ -400,13 +435,6 @@ const cb=document.getElementById('st'+i);
 if(cb&&cb.checked){tasks.push({text:t,done:false,priority:'p3',type:'日常'});cb.checked=false;added++;}
 });
 if(added>0){saveTasks(selectedDate,tasks);renderTasks();renderCalendar();alert(`已添加 ${added} 个任务`);}
-}
-
-function goToSingleTasks(){
-closeModal();
-setTimeout(()=>{
-document.querySelector('.sidebar').scrollIntoView({behavior:'smooth'});
-},200);
 }
 
 function applyTemplate(idx){
