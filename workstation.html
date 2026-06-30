@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>杨茹 - 个人工作台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        /* 左侧导航 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #1a1a2e;
+            color: #fff;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-header h2 i {
+            font-size: 20px;
+            color: #ffd700;
+        }
+        .sidebar-header p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        .nav-menu {
+            padding: 12px 0;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+        .nav-item.active {
+            border-left: 3px solid #ffd700;
+            background: rgba(255,215,0,0.08);
+        }
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 200px;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .page-title .date-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .weather-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+        .weather-item i {
+            font-size: 18px;
+            color: #ffa500;
+        }
+        .weather-item.temp i { color: #ff6b6b; }
+
+        /* 统计卡片 */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .stat-icon.blue { background: #e3f2fd; color: #1976d2; }
+        .stat-icon.green { background: #e8f5e9; color: #388e3c; }
+        .stat-icon.orange { background: #fff3e0; color: #f57c00; }
+        .stat-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+        .stat-info h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .stat-info p {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* 内容网格 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .content-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* 面板卡片 */
+        .panel-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-header h3 i {
+            color: #ffd700;
+        }
+        .panel-body {
+            padding: 16px 20px;
+        }
+
+        /* 打卡区域 */
+        .check-in-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .check-in-btn {
+            padding: 16px;
+            border-radius: 10px;
+            border: 2px solid #e8e8e8;
+            background: #fafafa;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .check-in-btn:hover {
+            border-color: #ffd700;
+            background: #fffbeb;
+        }
+        .check-in-btn.checked {
+            border-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .check-in-btn.checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: #4caf50;
+            font-size: 12px;
+        }
+        .check-in-btn i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .check-in-btn.train i { color: #2196f3; }
+        .check-in-btn.quality i { color: #ff9800; }
+        .check-in-btn.weekly i { color: #9c27b0; }
+        .check-in-btn.monthly i { color: #e91e63; }
+        .check-in-btn.optimize i { color: #00bcd4; }
+        .check-in-btn.daily i { color: #795548; }
+        .check-in-btn span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+        .check-in-btn small {
+            display: block;
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .check-in-progress {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #ffd700;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        /* 待办列表 */
+        .todo-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            gap: 10px;
+        }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .todo-check:hover { border-color: #ffd700; }
+        .todo-check.done {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: #fff;
+            font-size: 10px;
+        }
+        .todo-text {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+        .todo-text.done {
+            text-decoration: line-through;
+            color: #bbb;
+        }
+        .todo-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .todo-tag.urgent { background: #ffebee; color: #c62828; }
+        .todo-tag.normal { background: #e3f2fd; color: #1565c0; }
+        .todo-tag.low { background: #f5f5f5; color: #666; }
+        .add-todo {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e0e0e0;
+        }
+        .add-todo input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .add-todo input:focus { border-color: #ffd700; }
+        .add-todo button {
+            padding: 8px 16px;
+            background: #ffd700;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-todo button:hover { background: #ffc107; }
+
+        /* 数据表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .data-table tr:hover { background: #fafafa; }
+        .data-table input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+        .data-table input:focus { border-color: #ffd700; }
+        .shop-name {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .staff-name {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* 月报概览 */
+        .month-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .overview-item {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .overview-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .overview-item .label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+        .btn-primary:hover { background: #ffc107; }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-success {
+            background: #4caf50;
+            color: #fff;
+        }
+        .btn-success:hover { background: #43a047; }
+
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0;
+        }
+        .tab {
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #333; }
+        .tab.active {
+            color: #1a1a2e;
+            border-bottom-color: #ffd700;
+            font-weight: 600;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 快速记录 */
+        .quick-note {
+            background: #fffde7;
+            border: 1px solid #fff9c4;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        .quick-note textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            resize: vertical;
+            min-height: 60px;
+            font-size: 13px;
+            outline: none;
+            color: #5d4037;
+        }
+        .quick-note textarea::placeholder { color: #bcaaa4; }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+            .month-overview { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-header h2 span, .nav-item span, .sidebar-footer { display: none; }
+            .main-content { margin-left: 60px; }
+            .stats-row { grid-template-columns: 1fr; }
+            .check-in-area { grid-template-columns: repeat(2, 1fr); }
+            .top-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .weather-info { width: 100%; }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #999; }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .panel-card { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-star"></i> <span>杨茹工作台</span></h2>
+            <p>个人效率管理中心</p>
+        </div>
+        <nav class="nav-menu">
+            <a href="#dashboard" class="nav-item active" onclick="switchTab('dashboard')">
+                <i class="fas fa-th-large"></i> <span>工作台</span>
+            </a>
+            <a href="#checkin" class="nav-item" onclick="switchTab('checkin')">
+                <i class="fas fa-calendar-check"></i> <span>打卡日历</span>
+            </a>
+            <a href="#weekly" class="nav-item" onclick="switchTab('weekly')">
+                <i class="fas fa-chart-bar"></i> <span>周报数据</span>
+            </a>
+            <a href="#monthly" class="nav-item" onclick="switchTab('monthly')">
+                <i class="fas fa-file-alt"></i> <span>月报汇总</span>
+            </a>
+            <a href="#todo" class="nav-item" onclick="switchTab('todo')">
+                <i class="fas fa-check-square"></i> <span>待办清单</span>
+            </a>
+            <a href="#records" class="nav-item" onclick="switchTab('records')">
+                <i class="fas fa-history"></i> <span>打卡记录</span>
+            </a>
+            <a href="#settings" class="nav-item" onclick="switchTab('settings')">
+                <i class="fas fa-cog"></i> <span>设置</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-save"></i> 数据本地自动保存
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <div class="page-title">
+                <h1>工作台</h1>
+                <div class="date-info" id="dateDisplay">加载中...</div>
+            </div>
+            <div class="weather-info">
+                <div class="weather-item">
+                    <i class="fas fa-sun"></i>
+                    <span id="weatherText">晴朗</span>
+                </div>
+                <div class="weather-item temp">
+                    <i class="fas fa-thermometer-half"></i>
+                    <span id="tempText">--°C</span>
+                </div>
+                <div class="weather-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>深圳</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-info">
+                    <h3 id="checkInCount">0</h3>
+                    <p>本月打卡天数</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3 id="todoDoneCount">0</h3>
+                    <p>待办已完成</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-info">
+                    <h3 id="weeklyCount">0</h3>
+                    <p>本周周报</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h3 id="monthlyCount">0</h3>
+                    <p>本月月报</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工作台首页 -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="content-grid">
+                <!-- 今日打卡 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-calendar-day"></i> 今日打卡</h3>
+                        <span style="font-size:12px;color:#888;" id="todayType">请选择工作类型</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="check-in-area">
+                            <div class="check-in-btn train" onclick="checkIn('train')">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                <span>培训日</span>
+                                <small>材料/演练/答疑</small>
+                            </div>
+                            <div class="check-in-btn quality" onclick="checkIn('quality')">
+                                <i class="fas fa-search"></i>
+                                <span>质检日</span>
+                                <small>抽查/评分/反馈</small>
+                            </div>
+                            <div class="check-in-btn weekly" onclick="checkIn('weekly')">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>周报日</span>
+                                <small>汇总/分析/计划</small>
+                            </div>
+                            <div class="check-in-btn monthly" onclick="checkIn('monthly')">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>月度管理日</span>
+                                <small>排班/考勤/统计</small>
+                            </div>
+                            <div class="check-in-btn optimize" onclick="checkIn('optimize')">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>优化日</span>
+                                <small>分析/优化/验证</small>
+                            </div>
+                            <div class="check-in-btn daily" onclick="checkIn('daily')">
+                                <i class="fas fa-tasks"></i>
+                                <span>日常管理</span>
+                                <small>日报/问题/计划</small>
+                            </div>
+                        </div>
+                        <div class="check-in-progress">
+                            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                                <span>本月打卡进度</span>
+                                <span id="progressText">0/22 个工作日</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 今日待办 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-list-check"></i> 今日待办</h3>
+                        <span style="font-size:12px;color:#888;" id="todoProgress">0/0 完成</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="todo-list" id="todoList">
+                            <!-- 动态生成 -->
+                        </div>
+                        <div class="add-todo">
+                            <input type="text" id="newTodo" placeholder="添加新待办..." onkeypress="if(event.key==='Enter')addTodo()">
+                            <button onclick="addTodo()"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 本周客服数据概览 -->
+                <div class="panel-card full-width">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-chart-pie"></i> 本周客服数据速览</h3>
+                        <button class="btn btn-primary" onclick="switchTab('weekly')" style="font-size:12px;padding:6px 12px;">
+                            <i class="fas fa-edit"></i> 录入完整数据
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" id="quickDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>店铺</th>
+                                        <th>客服</th>
+                                        <th>接待量</th>
+                                        <th>响应(秒)</th>
+                                        <th>满意度</th>
+                                        <th>询单→付款</th>
+                                        <th>转化率</th>
+                                        <th>连带销售</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quickDataBody">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="btn-group" style="margin-top:16px;">
+                            <button class="btn btn-success" onclick="saveQuickData()">
+                                <i class="fas fa-save"></i> 保存本周数据
+                            </button>
+                            <button class="btn btn-secondary" onclick="addDataRow()">
+                                <i class="fas fa-plus"></i> 添加一行
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速记录 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-sticky-note"></i> 快速记录</h3>
+                        <span style="font-size:12px;color:#888;">随时记下想法</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="quick-note">
+                            <textarea id="quickNote" placeholder="今天有什么重要发现或待办提醒？记下来..."></textarea>
+                        </div>
+                        <div class="btn-group" style="margin-top:12px;">
+                            <button class="btn btn-primary" onclick="saveNote()">
+                                <i class="fas fa-save"></i> 保存记录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近动态 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-clock"></i> 最近动态</h3>
+                        <span style="font-size:12px;color:#888;">最近7天</span>
+                    </div>
+                    <div class="panel-body">
+                        <div id="recentActivity" style="font-size:13px;color:#666;line-height:1.8;">
+                            <p style="color:#999;text-align:center;padding:20px 0;">暂无记录，开始打卡后这里会显示动态</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 打卡日历 -->
+        <div id="tab-checkin" class="tab-content">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fas fa-calendar-alt"></i> 打卡日历</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <span id="calendarMonth" style="padding:8px 16px;font-weight:600;"></span>
+                        <button class="btn btn-secondary" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div id="calendarBody" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center;">
+                        <!-- 动态生成 -->
+                    </div>
+                    <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#e3f2fd;border-radius:2px;margin-right:4px;"></span>培训日</span>
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#fff3e0;border-radius:2px;margin-right:4px;"></span>质检日</span>
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#f3e5f5;border-radius:2px;margin-right:4px;"></span>周报日</span>
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#fce4ec;border-radius:2px;margin-right:4px;"></span>月度管理日</span>
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#e0f7fa;border-radius:2px;margin-right:4px;"></span>优化日</span>
+                        <span style="font-size:12px;"><span style="display:inline-block;width:12px;height:12px;background:#f1f8e9;border-radius:2px;margin-right:4px;"></span>日常管理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 周报数据 -->
+        <div id="tab-weekly" class="tab-content">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-bar"></i> 周报数据录入</h3>
+                    <div>
+                        <input type="week" id="weekPicker" style="padding:6px 12px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;">
+                        <button class="btn btn-primary" onclick="saveWeeklyData()" style="margin-left:8px;">
+                            <i class="fas fa-save"></i> 保存周报
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" id="weeklyTable">
+                            <thead>
+                                <tr>
+                                    <th>店铺名称</th>
+                                    <th>客服姓名</th>
+                                    <th>接待人数</th>
+                                    <th>平均响应(秒)</th>
+                                    <th>满意度(%)</th>
+                                    <th>询单数</th>
+                                    <th>付款数</th>
+                                    <th>转化率(%)</th>
+                                    <th>连带销售额(元)</th>
+                                    <th>备注</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="btn-group" style="margin-top:16px;">
+                        <button class="btn btn-secondary" onclick="addWeeklyRow()">
+                            <i class="fas fa-plus"></i> 添加数据行
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadTemplateData()">
+                            <i class="fas fa-magic"></i> 加载示例数据
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-card" style="margin-top:16px;">
+                <div class="panel-header">
+                    <h3><i class="fas fa-history"></i> 历史周报</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="weeklyHistory">
+                        <p style="color:#999;text-align:center;padding:20px;">暂无周报记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 月报汇总 -->
+        <div id="tab-monthly" class="tab-content">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fas fa-file-alt"></i> 月报汇总</h3>
+                    <div>
+                        <input type="month" id="monthPicker" style="padding:6px 12px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;">
+                        <button class="btn btn-primary" onclick="saveMonthlyData()" style="margin-left:8px;">
+                            <i class="fas fa-save"></i> 保存月报
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="month-overview">
+                        <div class="overview-item">
+                            <div class="value" id="moTotalService">0</div>
+                            <div class="label">总接待量</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="value" id="moAvgResponse">0s</div>
+                            <div class="label">平均响应</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="value" id="moAvgRate">0%</div>
+                            <div class="label">平均转化率</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="value" id="moTotalSales">0</div>
+                            <div class="label">连带销售总额</div>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchMonthlyTab(this,'summary')">数据汇总</div>
+                        <div class="tab" onclick="switchMonthlyTab(this,'attendance')">考勤统计</div>
+                        <div class="tab" onclick="switchMonthlyTab(this,'performance')">绩效分析</div>
+                        <div class="tab" onclick="switchMonthlyTab(this,'notes')">月度总结</div>
+                    </div>
+
+                    <div id="monthly-summary" class="monthly-tab-content active">
+                        <table class="data-table" id="monthlyTable">
+                            <thead>
+                                <tr>
+                                    <th>店铺</th>
+                                    <th>客服人数</th>
+                                    <th>总接待</th>
+                                    <th>平均响应</th>
+                                    <th>满意度</th>
+                                    <th>总转化</th>
+                                    <th>连带销售</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="monthly-attendance" class="monthly-tab-content" style="display:none;">
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                            <div>
+                                <h4 style="font-size:14px;margin-bottom:12px;color:#555;">考勤统计</h4>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>项目</th><th>天数</th><th>备注</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>应出勤</td>
+                                            <td><input type="number" id="attendanceShould" value="22" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>实际出勤</td>
+                                            <td><input type="number" id="attendanceActual" value="22" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>迟到/早退</td>
+                                            <td><input type="number" id="attendanceLate" value="0" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>请假</td>
+                                            <td><input type="number" id="attendanceLeave" value="0" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>扣罚金额</td>
+                                            <td><input type="number" id="attendancePenalty" value="0" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>奖励金额</td>
+                                            <td><input type="number" id="attendanceBonus" value="0" style="width:60px;"></td>
+                                            <td><input type="text" placeholder="备注"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <h4 style="font-size:14px;margin-bottom:12px;color:#555;">排班信息</h4>
+                                <div class="quick-note">
+                                    <textarea id="scheduleNote" placeholder="记录本月排班情况..." style="min-height:120px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="monthly-performance" class="monthly-tab-content" style="display:none;">
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                            <div>
+                                <h4 style="font-size:14px;margin-bottom:12px;color:#555;">转化率趋势</h4>
+                                <div id="conversionChart" style="height:200px;background:#f8f9fa;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#999;">
+                                    [数据可视化区域 - 可接入图表库]
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="font-size:14px;margin-bottom:12px;color:#555;">客服排名</h4>
+                                <div id="staffRanking" style="max-height:200px;overflow-y:auto;">
+                                    <p style="color:#999;text-align:center;padding:20px;">录入数据后显示排名</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="monthly-notes" class="monthly-tab-content" style="display:none;">
+                        <div class="quick-note" style="background:#fff;">
+                            <textarea id="monthlySummaryNote" placeholder="本月工作总结、亮点、问题及下月计划..." style="min-height:200px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待办清单 -->
+        <div id="tab-todo" class="tab-content">
+            <div class="content-grid">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-list-check"></i> 全部待办</h3>
+                        <button class="btn btn-primary" onclick="addTodoFromPage()" style="font-size:12px;padding:6px 12px;">
+                            <i class="fas fa-plus"></i> 新建待办
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="todo-list" id="allTodoList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-check-double"></i> 已完成</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="todo-list" id="doneTodoList">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 打卡记录 -->
+        <div id="tab-records" class="tab-content">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fas fa-history"></i> 打卡记录</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="checkInRecords">
+                        <p style="color:#999;text-align:center;padding:40px;">暂无打卡记录，去工作台开始打卡吧！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置 -->
+        <div id="tab-settings" class="tab-content">
+            <div class="panel-card" style="max-width:600px;">
+                <div class="panel-header">
+                    <h3><i class="fas fa-cog"></i> 工作台设置</h3>
+                </div>
+                <div class="panel-body">
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#333;">所在城市</label>
+                        <input type="text" id="citySetting" value="深圳" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:6px;font-size:14px;">
+                        <p style="font-size:12px;color:#888;margin-top:4px;">用于显示天气信息</p>
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#333;">店铺列表</label>
+                        <textarea id="shopList" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:6px;font-size:14px;min-height:80px;resize:vertical;" placeholder="每行一个店铺名称">店铺A
+店铺B
+店铺C</textarea>
+                        <p style="font-size:12px;color:#888;margin-top:4px;">录入周报时会自动加载这些店铺</p>
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#333;">数据备份</label>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="exportData()">
+                                <i class="fas fa-download"></i> 导出数据
+                            </button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                                <i class="fas fa-upload"></i> 导入数据
+                            </button>
+                            <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importData(this)">
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="saveSettings()" style="width:100%;">
+                            <i class="fas fa-save"></i> 保存设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 数据存储 ============
+        let data = {
+            checkIns: {},  // { '2024-01-01': 'train' }
+            todos: [],     // [{ id, text, done, tag, date }]
+            weeklyData: {}, // { '2024-W01': [...] }
+            monthlyData: {}, // { '2024-01': {...} }
+            notes: [],     // [{ date, content }]
+            settings: {
+                city: '深圳',
+                shops: ['店铺A', '店铺B', '店铺C']
+            }
+        };
+
+        // 加载本地数据
+        function loadData() {
+            const saved = localStorage.getItem('yangru_workstation');
+            if (saved) {
+                try {
+                    data = JSON.parse(saved);
+                    if (!data.settings) data.settings = { city: '深圳', shops: ['店铺A', '店铺B', '店铺C'] };
+                } catch(e) { console.error('数据加载失败', e); }
+            }
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('yangru_workstation', JSON.stringify(data));
+            updateUI();
+        }
+
+        // ============ 日期天气 ============
+        function updateDateTime() {
+            const now = new Date();
+            const weekdays = ['日','一','二','三','四','五','六'];
+            const str = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${weekdays[now.getDay()]} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            document.getElementById('dateDisplay').textContent = str;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // 天气（使用 wttr.in）
+        async function fetchWeather() {
+            try {
+                const city = data.settings?.city || '深圳';
+                const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=%C|%t`);
+                const text = await res.text();
+                const [condition, temp] = text.split('|');
+                document.getElementById('weatherText').textContent = condition.trim();
+                document.getElementById('tempText').textContent = temp.trim();
+            } catch(e) {
+                document.getElementById('weatherText').textContent = '晴朗';
+                document.getElementById('tempText').textContent = '28°C';
+            }
+        }
+
+        // ============ 导航切换 ============
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event?.target?.closest('.nav-item')?.classList.add('active');
+            if (tabId === 'checkin') renderCalendar();
+            if (tabId === 'records') renderRecords();
+        }
+
+        function switchMonthlyTab(el, tabId) {
+            document.querySelectorAll('#tab-monthly .tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.monthly-tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById('monthly-' + tabId).style.display = 'block';
+        }
+
+        // ============ 打卡功能 ============
+        const checkInTypes = {
+            train: { name: '培训日', icon: 'fa-chalkboard-teacher', color: '#e3f2fd' },
+            quality: { name: '质检日', icon: 'fa-search', color: '#fff3e0' },
+            weekly: { name: '周报日', icon: 'fa-chart-bar', color: '#f3e5f5' },
+            monthly: { name: '月度管理日', icon: 'fa-calendar-alt', color: '#fce4ec' },
+            optimize: { name: '优化日', icon: 'fa-lightbulb', color: '#e0f7fa' },
+            daily: { name: '日常管理', icon: 'fa-tasks', color: '#f1f8e9' }
+        };
+
+        function checkIn(type) {
+            const today = formatDate(new Date());
+            if (data.checkIns[today]) {
+                if (!confirm('今天已经打过卡了，确定要重新打卡吗？')) return;
+            }
+            data.checkIns[today] = type;
+            saveData();
+            alert(`打卡成功！今日类型：${checkInTypes[type].name}`);
+        }
+
+        // ============ 待办功能 ============
+        function renderTodos() {
+            const list = document.getElementById('todoList');
+            const allList = document.getElementById('allTodoList');
+            const doneList = document.getElementById('doneTodoList');
+            const today = formatDate(new Date());
+
+            // 工作台只显示今日待办
+            const todayTodos = data.todos.filter(t => t.date === today);
+            list.innerHTML = todayTodos.length ? todayTodos.map(t => renderTodoItem(t)).join('') : '<p style="color:#999;text-align:center;padding:20px;">今日暂无待办</p>';
+
+            // 全部待办
+            const undone = data.todos.filter(t => !t.done);
+            allList.innerHTML = undone.length ? undone.map(t => renderTodoItem(t, true)).join('') : '<p style="color:#999;text-align:center;padding:20px;">太棒了，没有待办！</p>';
+
+            // 已完成
+            const done = data.todos.filter(t => t.done);
+            doneList.innerHTML = done.length ? done.map(t => renderTodoItem(t, true)).join('') : '<p style="color:#999;text-align:center;padding:20px;">还没有完成的待办</p>';
+
+            // 统计
+            const doneCount = data.todos.filter(t => t.done).length;
+            document.getElementById('todoDoneCount').textContent = doneCount;
+            document.getElementById('todoProgress').textContent = `${doneCount}/${data.todos.length} 完成`;
+        }
+
+        function renderTodoItem(t, showDate) {
+            const dateStr = showDate ? `<span style="font-size:11px;color:#aaa;margin-left:8px;">${t.date}</span>` : '';
+            return `
+                <div class="todo-item">
+                    <div class="todo-check ${t.done ? 'done' : ''}" onclick="toggleTodo('${t.id}')">
+                        ${t.done ? '<i class="fas fa-check"></i>' : ''}
+                    </div>
+                    <div class="todo-text ${t.done ? 'done' : ''}">${t.text}${dateStr}</div>
+                    <span class="todo-tag ${t.tag}">${t.tag === 'urgent' ? '紧急' : t.tag === 'normal' ? '普通' : '低优'}</span>
+                </div>
+            `;
+        }
+
+        function toggleTodo(id) {
+            const todo = data.todos.find(t => t.id === id);
+            if (todo) {
+                todo.done = !todo.done;
+                saveData();
+            }
+        }
+
+        function addTodo() {
+            const input = document.getElementById('newTodo');
+            const text = input.value.trim();
+            if (!text) return;
+            data.todos.push({
+                id: Date.now().toString(),
+                text,
+                done: false,
+                tag: 'normal',
+                date: formatDate(new Date())
+            });
+            input.value = '';
+            saveData();
+        }
+
+        function addTodoFromPage() {
+            const text = prompt('输入待办内容：');
+            if (text) {
+                data.todos.push({
+                    id: Date.now().toString(),
+                    text,
+                    done: false,
+                    tag: 'normal',
+                    date: formatDate(new Date())
+                });
+                saveData();
+            }
+        }
+
+        // ============ 周报数据 ============
+        function addWeeklyRow() {
+            const tbody = document.getElementById('weeklyBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="shop-input" placeholder="店铺" value="${data.settings.shops[0]||''}"></td>
+                <td><input type="text" class="staff-input" placeholder="客服姓名"></td>
+                <td><input type="number" class="service-input" placeholder="0"></td>
+                <td><input type="number" class="response-input" placeholder="0"></td>
+                <td><input type="number" class="satisfaction-input" placeholder="0"></td>
+                <td><input type="number" class="inquiry-input" placeholder="0"></td>
+                <td><input type="number" class="payment-input" placeholder="0"></td>
+                <td><input type="number" class="rate-input" placeholder="0"></td>
+                <td><input type="number" class="sales-input" placeholder="0"></td>
+                <td><input type="text" class="note-input" placeholder="备注"></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function addDataRow() {
+            const tbody = document.getElementById('quickDataBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="q-shop" placeholder="店铺" value="${data.settings.shops[0]||''}"></td>
+                <td><input type="text" class="q-staff" placeholder="客服"></td>
+                <td><input type="number" class="q-service" placeholder="0"></td>
+                <td><input type="number" class="q-response" placeholder="0"></td>
+                <td><input type="number" class="q-satisfaction" placeholder="0"></td>
+                <td><input type="number" class="q-inquiry" placeholder="0"></td>
+                <td><input type="number" class="q-payment" placeholder="0"></td>
+                <td><input type="number" class="q-rate" placeholder="0"></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function saveWeeklyData() {
+            const week = document.getElementById('weekPicker').value;
+            if (!week) { alert('请选择周次'); return; }
+            const rows = document.querySelectorAll('#weeklyBody tr');
+            const records = [];
+            rows.forEach(row => {
+                records.push({
+                    shop: row.querySelector('.shop-input')?.value || '',
+                    staff: row.querySelector('.staff-input')?.value || '',
+                    service: row.querySelector('.service-input')?.value || '',
+                    response: row.querySelector('.response-input')?.value || '',
+                    satisfaction: row.querySelector('.satisfaction-input')?.value || '',
+                    inquiry: row.querySelector('.inquiry-input')?.value || '',
+                    payment: row.querySelector('.payment-input')?.value || '',
+                    rate: row.querySelector('.rate-input')?.value || '',
+                    sales: row.querySelector('.sales-input')?.value || '',
+                    note: row.querySelector('.note-input')?.value || ''
+                });
+            });
+            data.weeklyData[week] = records;
+            saveData();
+            alert('周报数据已保存！');
+        }
+
+        function saveQuickData() {
+            const week = getCurrentWeek();
+            const rows = document.querySelectorAll('#quickDataBody tr');
+            const records = [];
+            rows.forEach(row => {
+                records.push({
+                    shop: row.querySelector('.q-shop')?.value || '',
+                    staff: row.querySelector('.q-staff')?.value || '',
+                    service: row.querySelector('.q-service')?.value || '',
+                    response: row.querySelector('.q-response')?.value || '',
+                    satisfaction: row.querySelector('.q-satisfaction')?.value || '',
+                    inquiry: row.querySelector('.q-inquiry')?.value || '',
+                    payment: row.querySelector('.q-payment')?.value || '',
+                    rate: row.querySelector('.q-rate')?.value || ''
+                });
+            });
+            data.weeklyData[week] = records;
+            saveData();
+            alert('数据已保存到本周周报！');
+        }
+
+        function loadTemplateData() {
+            document.getElementById('weeklyBody').innerHTML = '';
+            const templates = [
+                ['店铺A', '张三', 120, 15, 95, 80, 45, 56, 3500, '表现优秀'],
+                ['店铺A', '李四', 98, 18, 92, 65, 32, 49, 2800, '需提升响应速度'],
+                ['店铺B', '王五', 150, 12, 97, 100, 58, 58, 4200, '转化率高'],
+                ['店铺B', '赵六', 110, 20, 88, 70, 30, 43, 2100, '需关注满意度']
+            ];
+            templates.forEach(t => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="shop-input" value="${t[0]}"></td>
+                    <td><input type="text" class="staff-input" value="${t[1]}"></td>
+                    <td><input type="number" class="service-input" value="${t[2]}"></td>
+                    <td><input type="number" class="response-input" value="${t[3]}"></td>
+                    <td><input type="number" class="satisfaction-input" value="${t[4]}"></td>
+                    <td><input type="number" class="inquiry-input" value="${t[5]}"></td>
+                    <td><input type="number" class="payment-input" value="${t[6]}"></td>
+                    <td><input type="number" class="rate-input" value="${t[7]}"></td>
+                    <td><input type="number" class="sales-input" value="${t[8]}"></td>
+                    <td><input type="text" class="note-input" value="${t[9]}"></td>
+                `;
+                document.getElementById('weeklyBody').appendChild(row);
+            });
+        }
+
+        // ============ 月报功能 ============
+        function saveMonthlyData() {
+            const month = document.getElementById('monthPicker').value;
+            if (!month) { alert('请选择月份'); return; }
+            data.monthlyData[month] = {
+                summary: document.getElementById('monthlySummaryNote')?.value || '',
+                schedule: document.getElementById('scheduleNote')?.value || '',
+                attendance: {
+                    should: document.getElementById('attendanceShould')?.value || 22,
+                    actual: document.getElementById('attendanceActual')?.value || 22,
+                    late: document.getElementById('attendanceLate')?.value || 0,
+                    leave: document.getElementById('attendanceLeave')?.value || 0,
+                    penalty: document.getElementById('attendancePenalty')?.value || 0,
+                    bonus: document.getElementById('attendanceBonus')?.value || 0
+                }
+            };
+            saveData();
+            alert('月报已保存！');
+        }
+
+        // ============ 日历 ============
+        let currentCalendarDate = new Date();
+
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            document.getElementById('calendarMonth').textContent = `${year}年${month + 1}月`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const body = document.getElementById('calendarBody');
+
+            const weekDays = ['日','一','二','三','四','五','六'];
+            let html = weekDays.map(d => `<div style="font-weight:600;color:#888;padding:8px;font-size:12px;">${d}</div>`).join('');
+
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const checkIn = data.checkIns[dateStr];
+                const isToday = dateStr === formatDate(new Date());
+                const bg = checkIn ? checkInTypes[checkIn]?.color : '#fff';
+                const border = isToday ? '2px solid #ffd700' : '1px solid #f0f0f0';
+                const icon = checkIn ? `<i class="fas ${checkInTypes[checkIn]?.icon}" style="font-size:10px;color:#666;display:block;margin-top:2px;"></i>` : '';
+
+                html += `<div style="background:${bg};border:${border};border-radius:8px;padding:8px 4px;cursor:pointer;min-height:48px;" onclick="alert('${dateStr}: ${checkIn ? checkInTypes[checkIn]?.name : '未打卡'}')">
+                    <div style="font-size:13px;font-weight:${isToday?600:400};color:${isToday?'#ffd700':'#333'};">${d}</div>
+                    ${icon}
+                </div>`;
+            }
+            body.innerHTML = html;
+        }
+
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // ============ 记录 ============
+        function renderRecords() {
+            const container = document.getElementById('checkInRecords');
+            const records = Object.entries(data.checkIns).sort((a,b) => b[0].localeCompare(a[0]));
+            if (!records.length) {
+                container.innerHTML = '<p style="color:#999;text-align:center;padding:40px;">暂无打卡记录，去工作台开始打卡吧！</p>';
+                return;
+            }
+            let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+            records.forEach(([date, type]) => {
+                const info = checkInTypes[type];
+                html += `
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f8f9fa;border-radius:8px;">
+                        <div style="width:36px;height:36px;border-radius:8px;background:${info.color};display:flex;align-items:center;justify-content:center;">
+                            <i class="fas ${info.icon}" style="color:#666;"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:600;color:#333;">${info.name}</div>
+                            <div style="font-size:12px;color:#888;">${date}</div>
+                        </div>
+                        <span style="font-size:12px;color:#4caf50;"><i class="fas fa-check-circle"></i> 已打卡</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ============ 快速记录 ============
+        function saveNote() {
+            const content = document.getElementById('quickNote').value.trim();
+            if (!content) { alert('请输入内容'); return; }
+            data.notes.push({ date: formatDate(new Date()), content });
+            document.getElementById('quickNote').value = '';
+            saveData();
+            alert('记录已保存！');
+        }
+
+        // ============ 设置 ============
+        function saveSettings() {
+            data.settings.city = document.getElementById('citySetting').value || '深圳';
+            data.settings.shops = document.getElementById('shopList').value.split('\n').filter(s => s.trim());
+            saveData();
+            fetchWeather();
+            alert('设置已保存！');
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `workstation_backup_${formatDate(new Date())}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('导入将覆盖现有数据，确定继续？')) {
+                        data = imported;
+                        saveData();
+                        alert('数据导入成功！');
+                    }
+                } catch(err) {
+                    alert('文件格式错误');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ============ 工具函数 ============
+        function formatDate(d) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function getCurrentWeek() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+            const week = Math.ceil((days + start.getDay() + 1) / 7);
+            return `${now.getFullYear()}-W${String(week).padStart(2,'0')}`;
+        }
+
+        function updateUI() {
+            // 统计
+            const month = new Date().toISOString().slice(0, 7);
+            const monthCheckIns = Object.keys(data.checkIns).filter(d => d.startsWith(month)).length;
+            document.getElementById('checkInCount').textContent = monthCheckIns;
+
+            const doneCount = data.todos.filter(t => t.done).length;
+            document.getElementById('todoDoneCount').textContent = doneCount;
+
+            const week = getCurrentWeek();
+            document.getElementById('weeklyCount').textContent = data.weeklyData[week] ? data.weeklyData[week].length : 0;
+            document.getElementById('monthlyCount').textContent = data.monthlyData[month] ? 1 : 0;
+
+            // 打卡进度
+            const workDays = 22;
+            const progress = Math.round((monthCheckIns / workDays) * 100);
+            document.getElementById('progressText').textContent = `${monthCheckIns}/${workDays} 个工作日`;
+            document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+
+            // 待办
+            renderTodos();
+
+            // 今日打卡状态
+            const today = formatDate(new Date());
+            const todayCheck = data.checkIns[today];
+            if (todayCheck) {
+                document.getElementById('todayType').textContent = `今日：${checkInTypes[todayCheck].name}`;
+                document.querySelectorAll('.check-in-btn').forEach(btn => btn.classList.remove('checked'));
+                const active = document.querySelector(`.check-in-btn.${todayCheck}`);
+                if (active) active.classList.add('checked');
+            }
+
+            // 快速数据表初始化
+            if (!document.getElementById('quickDataBody').children.length) {
+                addDataRow();
+            }
+
+            // 周报表初始化
+            if (!document.getElementById('weeklyBody').children.length) {
+                addWeeklyRow();
+                addWeeklyRow();
+            }
+
+            // 设置值
+            document.getElementById('citySetting').value = data.settings.city;
+            document.getElementById('shopList').value = data.settings.shops.join('\n');
+
+            // 周次/月份默认值
+            document.getElementById('weekPicker').value = getCurrentWeek();
+            document.getElementById('monthPicker').value = month;
+        }
+
+        // ============ 初始化 ============
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            fetchWeather();
+        });
+    </script>
+</body>
+</html>
