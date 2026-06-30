@@ -832,8 +832,14 @@
                         </table>
                     </div>
                     <div class="btn-group" style="margin-top:16px;">
+                        <button class="btn btn-success" onclick="saveWeeklyData()">
+                            <i class="fas fa-save"></i> 保存周报
+                        </button>
                         <button class="btn btn-secondary" onclick="addWeeklyRow()">
                             <i class="fas fa-plus"></i> 添加数据行
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportWeeklyCSV()">
+                            <i class="fas fa-file-export"></i> 导出周报CSV
                         </button>
                         <button class="btn btn-secondary" onclick="loadTemplateData()">
                             <i class="fas fa-magic"></i> 加载示例数据
@@ -1023,6 +1029,11 @@
             <div class="panel-card">
                 <div class="panel-header">
                     <h3><i class="fas fa-history"></i> 打卡记录</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="exportCheckInCSV()">
+                            <i class="fas fa-file-export"></i> 导出打卡记录
+                        </button>
+                    </div>
                 </div>
                 <div class="panel-body">
                     <div id="checkInRecords">
@@ -1479,6 +1490,46 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        // ============ CSV 导出功能 ============
+        function exportWeeklyCSV() {
+            const week = document.getElementById('weekPicker').value || getCurrentWeek();
+            const records = data.weeklyData[week];
+            if (!records || !records.length) {
+                alert('本周暂无数据，请先录入或保存周报');
+                return;
+            }
+            const headers = ['店铺名称', '客服姓名', '接待人数', '平均响应(秒)', '满意度(%)', '询单数', '付款数', '转化率(%)', '连带销售额(元)', '备注'];
+            const rows = records.map(r => [
+                r.shop, r.staff, r.service, r.response, r.satisfaction,
+                r.inquiry, r.payment, r.rate, r.sales, r.note
+            ]);
+            downloadCSV(headers, rows, `周报_${week}.csv`);
+        }
+
+        function exportCheckInCSV() {
+            const records = Object.entries(data.checkIns).sort((a,b) => a[0].localeCompare(b[0]));
+            if (!records.length) {
+                alert('暂无打卡记录');
+                return;
+            }
+            const headers = ['日期', '工作类型'];
+            const rows = records.map(([date, type]) => [date, checkInTypes[type]?.name || type]);
+            downloadCSV(headers, rows, `打卡记录_${formatDate(new Date())}.csv`);
+        }
+
+        function downloadCSV(headers, rows, filename) {
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(','))
+                .join('\n');
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // ============ 工具函数 ============
