@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杨茹 - 个人工作台</title>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;--primary:#0d9488;--green:#10b981;--red:#f43f5e;--blue:#38bdf8;--yellow:#f59e0b;--purple:#8b5cf6;--orange:#fb923c;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+.sidebar{position:fixed;left:0;top:0;width:200px;height:100vh;background:#fff;border-right:1px solid #e2e8f0;z-index:100}
+.sidebar-header{padding:24px 20px;border-bottom:1px solid #e2e8f0}
+.sidebar-header h2{font-size:16px;font-weight:600;margin:0;color:#0d9488}
+.sidebar-header p{font-size:12px;color:#94a3b8;margin-top:4px}
+.nav-menu{padding:12px 0}
+.nav-item{padding:12px 20px;color:#64748b;cursor:pointer;font-size:14px;transition:all .2s}
+.nav-item:hover,.nav-item.active{background:#f0fdfa;color:#0d9488}
+.nav-item.active{border-left:3px solid #0d9488;font-weight:600}
+.main-content{margin-left:200px;min-height:100vh;padding:24px}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-title h1{font-size:24px;font-weight:600;color:#0d9488;margin:0}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);display:flex;align-items:center;gap:16px}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:#f0fdfa;color:#0d9488}
+.panel-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:16px}
+.panel-header{padding:16px 20px;border-bottom:1px solid #e2e8f0;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;color:#1e293b}
+.panel-body{padding:16px 20px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ===== 打卡日历 ===== */
+.calendar-header{background:var(--primary);color:#fff;padding:12px 16px;border-radius:12px 12px 0 0}
+.month-nav{display:flex;justify-content:center;align-items:center;gap:16px}
+.month-nav button{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px}
+.month-nav span{font-size:16px;font-weight:500;min-width:120px;text-align:center}
+.progress-bar{background:rgba(255,255,255,.2);height:5px;border-radius:3px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:3px}
+.progress-text{font-size:12px;color:rgba(255,255,255,.8);margin-top:6px;display:flex;justify-content:space-between}
+.cal-layout{display:flex;gap:8px;padding:8px;max-width:100%;margin:0 auto}
+.cal-sidebar{width:230px;flex-shrink:0;padding:0 4px}
+.cal-main{flex:1;min-width:0}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:16px;font-weight:700;margin-bottom:10px;color:#1e293b}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+.weekdays div{text-align:center;font-size:12px;color:#fff;padding:5px 0;font-weight:700;border-radius:6px}
+.weekdays div:nth-child(1){background:#f87171}
+.weekdays div:nth-child(2),.weekdays div:nth-child(3),.weekdays div:nth-child(4),.weekdays div:nth-child(5),.weekdays div:nth-child(6){background:#7dd3fc}
+.weekdays div:nth-child(7){background:#fdba74}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day-cell{aspect-ratio:1.0;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent;position:relative;font-size:12px;background:#fff;padding:4px 2px}
+.day-cell:hover{background:#f0fdfa}
+.day-cell.today{border-color:var(--primary);background:#f0fdfa}
+.day-cell .day-num{font-size:18px;font-weight:600}
+.day-cell.sun-day .day-num{color:#f87171}
+.day-cell.sat-day .day-num{color:#fb923c}
+.day-cell .day-status{font-size:11px;margin-top:2px;opacity:.7}
+.day-cell.all-done{background:rgba(16,185,129,.12);color:var(--green)}
+.day-cell.partial{background:rgba(245,158,11,.1);color:var(--yellow)}
+.day-cell.empty{cursor:default;opacity:0}
+.template-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.template-item{padding:12px;background:#f8fafc;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.template-item:hover{border-color:var(--primary);background:#f0fdfa}
+.template-item .t-name{font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px}
+.template-item .t-tasks{font-size:12px;color:#64748b;line-height:1.4}
+.single-task-list{display:flex;flex-direction:column;gap:3px;max-height:280px;overflow-y:auto}
+.single-task-item{display:flex;align-items:center;padding:4px 6px;background:#f8fafc;border-radius:6px;font-size:12px;gap:6px}
+.add-single-btn{width:100%;padding:6px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-top:6px;font-weight:600}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;justify-content:center;align-items:center;z-index:1000}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;width:92%;max-width:600px;max-height:92vh;border-radius:16px;padding:12px;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,.1)}
+.task-item{display:flex;align-items:center;padding:5px 8px;background:#f8fafc;border-radius:8px;margin-bottom:3px;gap:6px}
+.task-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--green)}
+.task-item .task-body{flex:1}
+.task-item.completed .task-text{text-decoration:line-through;color:var(--text2);opacity:.6}
+.task-item .delete-btn{background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;opacity:0}
+.task-item:hover .delete-btn{opacity:1}
+.add-task{display:flex;gap:4px;margin-top:4px}
+.add-task input{flex:1;padding:6px 8px;border:2px solid var(--border);border-radius:8px;font-size:12px}
+.add-task button{padding:6px 12px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer}
+
+/* ===== 周报店铺折叠面板 ===== */
+.shop-panel{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.shop-header{display:flex;align-items:center;padding:12px 16px;background:#f8fafc;cursor:pointer;gap:12px}
+.shop-header:hover{background:#f1f5f9}
+.shop-toggle{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#94a3b8;transition:transform .2s}
+.shop-toggle.open{transform:rotate(90deg)}
+.shop-name{font-size:14px;font-weight:600;flex:1;color:#1e293b}
+.shop-group{font-size:11px;padding:2px 8px;border-radius:4px;background:#f0fdfa;color:#0d9488}
+.shop-sum{font-size:12px;color:#64748b}
+.shop-body{display:none;padding:12px 16px;background:#fff}
+.shop-body.open{display:block}
+.staff-row{display:grid;grid-template-columns:100px 80px 80px 80px 80px 80px 80px 80px 80px 120px 30px;gap:6px;align-items:center;margin-bottom:6px}
+.staff-row input{padding:5px 6px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;width:100%}
+.staff-row .staff-name{font-size:13px;font-weight:500;color:#1e293b}
+.staff-row .del-btn{color:#f43f5e;cursor:pointer;font-size:16px;text-align:center}
+.add-staff-btn{display:inline-block;padding:6px 12px;background:#f8fafc;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-top:6px;color:#0d9488}
+.add-staff-btn:hover{background:#f0fdfa}
+.shop-actions{display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #e2e8f0}
+
+/* 汇总卡片 */
+.sum-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px}
+.sum-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;cursor:pointer;transition:all .2s}
+.sum-card:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.sum-card .sc-title{font-size:13px;font-weight:600;color:#555;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.sum-card .sc-group{font-size:10px;padding:2px 6px;border-radius:4px;background:#f0f0f0;color:#666}
+.sum-card .sc-row{display:flex;justify-content:space-between;font-size:12px;color:#666;padding:3px 0}
+.sum-card .sc-val{font-weight:600;color:#333}
+
+/* 筛选栏 */
+.filter-bar{background:#f8fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.filter-bar label{font-size:13px;color:#64748b;font-weight:500}
+.filter-bar select{padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;min-width:120px;background:#fff}
+.btn-group{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn:hover{opacity:.9;transform:translateY(-1px)}
+.btn-p{background:#0d9488;color:#fff}
+.btn-s{background:#f1f5f9;color:#475569}
+.btn-g{background:#10b981;color:#fff}
+.btn-i{background:#38bdf8;color:#fff}
+.btn-r{background:#f43f5e;color:#fff}
+
+/* 表格 */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+.data-table th{background:#f8fafc;padding:10px 8px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0}
+.data-table td{padding:10px 8px;border-bottom:1px solid #e2e8f0}
+.sum-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px;background:#f8fafc}
+.sum-table th{background:#f0fdfa;padding:10px;text-align:center;font-weight:600;border:1px solid #e2e8f0;color:#0d9488}
+.sum-table td{padding:10px;text-align:center;border:1px solid #e2e8f0;background:#fff}
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #e2e8f0}
+.tab{padding:8px 16px;font-size:14px;color:#94a3b8;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:#0d9488;border-bottom-color:#0d9488;font-weight:600}
+
+/* 设置 */
+.set-row{margin-bottom:20px}
+.set-row label{display:block;font-size:14px;font-weight:600;margin-bottom:8px;color:#1e293b}
+.set-row input,.set-row textarea{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;background:#fff}
+.set-row textarea{min-height:80px;resize:vertical}
+
+.paste-a{width:100%;min-height:120px;padding:12px;border:2px dashed #e2e8f0;border-radius:8px;font-size:13px;resize:vertical}
+
+@media(max-width:1024px){.cal-layout{flex-direction:column}.cal-sidebar{width:100%}.staff-row{grid-template-columns:80px 60px 60px 60px 60px 60px 60px 60px 60px 80px 30px}}
+@media(max-width:768px){.sidebar{width:60px}.main-content{margin-left:60px}.stats-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+<div class="sidebar-header"><h2>杨茹工作台</h2><p>个人效率管理中心</p></div>
+<div class="nav-menu">
+<div class="nav-item active" onclick="switchTab('dashboard')">工作台</div>
+<div class="nav-item" onclick="switchTab('checkin')">打卡日历</div>
+<div class="nav-item" onclick="switchTab('weekly')">周报数据</div>
+<div class="nav-item" onclick="switchTab('monthly')">月报汇总</div>
+<div class="nav-item" onclick="switchTab('todo')">待办清单</div>
+<div class="nav-item" onclick="switchTab('data')">数据中心</div>
+<div class="nav-item" onclick="switchTab('settings')">设置</div>
+</div>
+</div>
+
+<div class="main-content">
+<div class="top-bar">
+<div class="page-title"><h1>工作台</h1></div>
+<div style="display:flex;gap:20px;align-items:center"><span id="cityDisplay">杭州</span><span id="dateDisplay">加载中...</span></div>
+</div>
+
+<div class="stats-row">
+<div class="stat-card"><div class="stat-icon">📅</div><div><h3 id="checkInCount">0</h3><p>本月打卡天数</p></div></div>
+<div class="stat-card"><div class="stat-icon" style="background:#e8f5e9;color:#388e3c">✓</div><div><h3 id="todoDoneCount">0</h3><p>待办已完成</p></div></div>
+<div class="stat-card"><div class="stat-icon" style="background:#fff3e0;color:#f57c00">📊</div><div><h3 id="weeklyCount">0</h3><p>本周周报</p></div></div>
+<div class="stat-card"><div class="stat-icon" style="background:#f3e5f5;color:#7b1fa2">📈</div><div><h3 id="monthlyCount">0</h3><p>本月月报</p></div></div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="tab-dashboard" class="tab-content active">
+<div class="panel-card"><div class="panel-header">今日打卡</div>
+<div class="panel-body">
+<button class="btn btn-p" onclick="quickCheckIn()">快速打卡</button>
+<span id="todayCheckStatus" style="font-size:13px;color:#666;margin-left:12px">今日未打卡</span>
+<div id="todayTasksPreview" style="margin-top:12px;font-size:13px;color:#666"></div>
+</div></div>
+<div class="panel-card"><div class="panel-header">今日待办</div>
+<div class="panel-body"><div id="todoList"></div>
+<div class="add-task"><input id="newTodo" placeholder="添加新待办..." onkeypress="if(event.key==='Enter')addTodo()"><button onclick="addTodo()">+</button></div>
+</div></div>
+</div>
+
+<!-- ===== CHECKIN ===== -->
+<div id="tab-checkin" class="tab-content">
+<div class="calendar-header">
+<div class="month-nav"><button onclick="prevMonth()">‹</button><span id="monthLabel"></span><button onclick="nextMonth()">›</button></div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-text"><span id="progressText"></span><span id="streakText"></span></div>
+</div>
+<div class="cal-layout">
+<div class="cal-sidebar">
+<div class="card"><h3>工作模板库</h3><div class="template-list" id="templateList"></div></div>
+<div class="card"><h3>单个任务</h3><div class="single-task-list" id="singleTasks"></div><button class="add-single-btn" onclick="addCheckedSingleTasks()">添加勾选到今日</button></div>
+</div>
+<div class="cal-main">
+<div class="card" style="padding:10px">
+<div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+<div class="days" id="calendarDays"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== WEEKLY ===== -->
+<div id="tab-weekly" class="tab-content">
+<div class="panel-card">
+<div class="panel-header">周报数据录入</div>
+<div class="panel-body">
+<div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+<input type="week" id="weekPicker" onchange="updateWeekDisplay();renderWeeklyPanels();">
+<span id="weekDisplayLabel" style="font-size:14px;font-weight:600;color:#333;margin-left:8px"></span>
+<button class="btn btn-p" onclick="saveWeeklyData()">保存周报</button>
+<button class="btn btn-s" onclick="exportWeeklyCSV()">导出周报</button>
+<button class="btn btn-i" onclick="showPasteModal()">智能粘贴</button>
+<button class="btn btn-s" onclick="copyLastWeek()">复制上周</button>
+</div>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;background:#f8f9fa;padding:10px 14px;border-radius:8px">
+<span style="font-size:13px;color:#555">添加店铺：</span>
+<input type="text" id="newShopName" placeholder="输入店铺名（如：抖音1店）" style="padding:6px 10px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;min-width:180px">
+<button class="btn btn-s" onclick="addShopFromInput()">+ 添加</button>
+</div>
+<div class="filter-bar">
+<div><label>分组：</label><select id="wFilterGroup" onchange="onFilterChange()"><option value="">全部分组</option></select></div>
+<div><label>店铺：</label><select id="wFilterShop" onchange="onFilterChange()"><option value="">全部店铺</option></select></div>
+<div><label>客服：</label><select id="wFilterStaff" onchange="onFilterChange()"><option value="">全部客服</option></select></div>
+<div><button class="btn btn-s" onclick="clearFilters()">清除筛选</button></div>
+</div>
+<div id="weeklyPanels"></div>
+<div id="weeklySummary"></div>
+</div></div>
+</div>
+
+<!-- ===== MONTHLY ===== -->
+<div id="tab-monthly" class="tab-content">
+<div class="panel-card"><div class="panel-header">月报汇总</div>
+<div class="panel-body">
+<div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+<input type="month" id="monthPicker" onchange="onMonthPickerChange()">
+<button class="btn btn-p" onclick="autoBuildMonthly()">从周报自动生成</button>
+<button class="btn btn-s" onclick="exportMonthlyCSV()">导出月报CSV</button>
+</div>
+<div id="monthlyAllMonths"></div>
+</div></div>
+</div>
+
+<!-- ===== TODO ===== -->
+<div id="tab-todo" class="tab-content">
+<div class="panel-card"><div class="panel-header">全部待办</div><div class="panel-body" id="allTodoList"></div></div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div id="tab-settings" class="tab-content">
+<div class="panel-card"><div class="panel-header">设置</div>
+<div class="panel-body">
+<div class="set-row"><label>所在城市</label><input type="text" id="citySetting" value="杭州"></div>
+<div class="set-row"><label>店铺列表（每行一个）</label><textarea id="shopList"></textarea></div>
+<div class="set-row"><label>店铺分组（格式：店铺名=分组名）</label><textarea id="shopGroupList"></textarea></div>
+<div class="set-row"><label>预设客服（格式：店铺名=客服名1,客服名2）</label><textarea id="shopStaffList" placeholder="抖音1店=小张,小李
+天猫MS=小王"></textarea></div>
+<div class="set-row"><label style="color:#0d9488">📊 指标预警设置（可自定义阈值）</label>
+<div style="background:#f8f9fa;border-radius:8px;padding:14px;margin-top:8px">
+<div style="font-size:13px;font-weight:600;margin-bottom:10px">转化率颜色标识</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#4caf50;border-radius:3px"></div><span style="font-size:13px">优秀 ≥</span><input type="number" id="rateExcellent" value="15" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">%</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f39c12;border-radius:3px"></div><span style="font-size:13px">良好 ≥</span><input type="number" id="rateGood" value="10" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">%</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f44336;border-radius:3px"></div><span style="font-size:13px">待提升 &lt;</span><input type="number" id="ratePoor" value="10" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px;background:#f5f5f5" readonly>%</div>
+</div>
+<div style="font-size:13px;font-weight:600;margin-bottom:10px">响应时间颜色标识</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#4caf50;border-radius:3px"></div><span style="font-size:13px">优秀 ≤</span><input type="number" id="respExcellent" value="20" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">秒</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f39c12;border-radius:3px"></div><span style="font-size:13px">良好 ≤</span><input type="number" id="respGood" value="30" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">秒</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f44336;border-radius:3px"></div><span style="font-size:13px">待提升 &gt;</span><input type="number" id="respPoor" value="30" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px;background:#f5f5f5" readonly>秒</div>
+</div>
+<div style="font-size:13px;font-weight:600;margin-bottom:10px">满意度颜色标识</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#4caf50;border-radius:3px"></div><span style="font-size:13px">优秀 ≥</span><input type="number" id="satExcellent" value="95" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">%</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f39c12;border-radius:3px"></div><span style="font-size:13px">良好 ≥</span><input type="number" id="satGood" value="90" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px">%</div>
+<div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;background:#f44336;border-radius:3px"></div><span style="font-size:13px">待提升 &lt;</span><input type="number" id="satPoor" value="90" style="width:50px;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:13px;background:#f5f5f5" readonly>%</div>
+</div>
+</div>
+</div>
+<div class="btn-group">
+<button class="btn btn-p" onclick="saveSettings()">保存设置</button>
+<button class="btn btn-s" onclick="exportData()">导出数据</button>
+<button class="btn btn-s" onclick="document.getElementById('importFile').click()">导入数据</button>
+<input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+</div>
+</div></div>
+</div>
+</div>
+
+<!-- ===== DATA CENTER ===== -->
+<div id="tab-data" class="tab-content">
+<div class="panel-card"><div class="panel-header">数据中心</div>
+<div class="panel-body">
+<div class="tabs">
+<div class="tab active" onclick="switchDataTab(this,'history-weekly')">历史周报</div>
+<div class="tab" onclick="switchDataTab(this,'history-monthly')">历史月报</div>
+<div class="tab" onclick="switchDataTab(this,'data-validate')">数据校验</div>
+</div>
+<div id="data-tab-history-weekly" class="tab-content" style="display:block">
+<div style="margin-bottom:12px"><input type="week" id="historyWeekPicker" onchange="renderHistoryWeekly()">
+<button class="btn btn-s" onclick="exportHistoryWeeklyCSV()">导出</button></div>
+<div id="historyWeeklyDetail"></div>
+</div>
+<div id="data-tab-history-monthly" class="tab-content">
+<div style="margin-bottom:12px"><input type="month" id="historyMonthPicker" onchange="renderHistoryMonthly()">
+<button class="btn btn-s" onclick="exportHistoryMonthlyCSV()">导出</button></div>
+<div id="historyMonthlyDetail"></div>
+</div>
+<div id="data-tab-data-validate" class="tab-content">
+<div id="validateResult"></div>
+</div>
+</div></div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-header" style="display:flex;justify-content:space-between;margin-bottom:8px"><h2 id="modalTitle">今日打卡</h2><button class="close-btn" onclick="closeModal()">×</button></div>
+<div style="font-size:12px;color:#666;margin-bottom:8px" id="dateLabel"></div>
+<div id="taskContainer"></div>
+<div class="add-task"><input type="text" id="newTaskInput" placeholder="添加任务..." onkeypress="if(event.key==='Enter')addTask()"><button onclick="addTask()">添加</button></div>
+<div style="margin-top:12px;text-align:center"><button onclick="saveAndClose()" class="btn btn-p">保存并关闭</button></div>
+</div>
+</div>
+
+<div id="pasteModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:12px;padding:24px;width:90%;max-width:600px">
+<h3 style="margin-bottom:16px">智能数据粘贴</h3>
+<textarea id="pasteData" class="paste-a" placeholder="粘贴数据..."></textarea>
+<div class="btn-group"><button class="btn btn-p" onclick="parsePasteData()">开始识别</button><button class="btn btn-s" onclick="closePasteModal()">取消</button></div>
+</div>
+</div>
+
+<script>
+/* ==================== DATA & CONFIG ==================== */
+let data={checkIns:{},todos:[],weeklyData:{},monthlyData:{},settings:{city:'杭州',shops:[],shopGroups:{},staffMap:{}}};
+let currentYear=new Date().getFullYear(),currentMonth=new Date().getMonth(),selectedDate=null;
+let todayStr=formatDate(new Date());
+let openShops=new Set();
+
+const TEMPLATES=[
+{name:"培训日",tasks:["准备培训材料","话术抽查","实战演练","新人答疑","培训复盘"],tags:["培训","团队管理"]},
+{name:"质检日",tasks:["抽查聊天记录","评分记录","反馈给客服","更新话术库","问题汇总"],tags:["质检","数据分析"]},
+{name:"周报日",tasks:["汇总本周数据","分析转化率","整理问题清单","下周计划","周会准备"],tags:["数据分析","日常"]},
+{name:"月度管理日",tasks:["制作下月排班表","统计月度考勤","登记本月扣罚","统计本月奖励","月度数据汇总"],tags:["排班考勤","扣罚奖励","团队管理"]},
+{name:"优化日",tasks:["转化率分析","话术优化","测试新方案","数据验证","方案归档"],tags:["数据分析","日常"]},
+{name:"日常管理",tasks:["查看日报","处理客服问题","处理客户投诉","临时任务协调","明日计划"],tags:["日常","团队管理"]}
+];
+const SINGLE_TASKS=["抽查客服聊天记录","更新话术库","处理客户投诉","新人入职培训","月度排班调整","统计客服考勤","登记扣罚记录","统计奖励名单","转化率分析","团队周会","处理退货纠纷","优化回复话术","检查库存预警","核对订单数据","整理培训资料"];
+
+/* ==================== UTILS ==================== */
+function formatDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+function round(n){return Math.round(n*10)/10;}
+function getGroup(shop){return data.settings.shopGroups[shop]||'未分组';}
+function getCurrentWeek(){const d=new Date();const s=new Date(d.getFullYear(),0,1);const days=Math.floor((d-s)/(864e5));return d.getFullYear()+'-W'+String(Math.ceil((days+s.getDay()+1)/7)).padStart(2,'0');}
+function getWeekStr(date){const s=new Date(date.getFullYear(),0,1);const days=Math.floor((date-s)/(864e5));return date.getFullYear()+'-W'+String(Math.ceil((days+s.getDay()+1)/7)).padStart(2,'0');}
+function getWeeksInMonth(year,month){const w=[];for(let d=1;d<=new Date(year,month,0).getDate();d++){const ws=getWeekStr(new Date(year,month-1,d));if(!w.includes(ws))w.push(ws);}return w;}
+function weekToChinese(weekStr){
+if(!weekStr)return'';
+const parts=weekStr.split('-W');
+if(parts.length<2)return weekStr;
+const year=parseInt(parts[0]);
+const weekNum=parseInt(parts[1]);
+// Find the first day of this week
+const d=new Date(year,0,1);
+const dayOffset=(weekNum-1)*7-d.getDay()+1;
+d.setDate(d.getDate()+dayOffset);
+const m=d.getMonth()+1;
+// Count which week in this month
+let weekInMonth=1;
+const firstDayOfMonth=new Date(d.getFullYear(),d.getMonth(),1);
+const firstWeekDay=firstDayOfMonth.getDay();
+const dayOfMonth=d.getDate();
+weekInMonth=Math.ceil((dayOfMonth+firstWeekDay)/7);
+return (year%100)+'年'+m+'月第'+weekInMonth+'周';
+}
+function updateWeekDisplay(){
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+const label=document.getElementById('weekDisplayLabel');
+if(label)label.textContent=weekToChinese(week);
+}
+
+/* ==================== STORAGE ==================== */
+function loadData(){
+const s=localStorage.getItem('yangru_workstation_v5');
+if(s){try{data=JSON.parse(s);}catch(e){}}
+if(!data.settings)data.settings={city:'杭州',shops:[],shopGroups:{},staffMap:{}};
+defaultShops();
+updateUI();
+}
+function saveData(){localStorage.setItem('yangru_workstation_v5',JSON.stringify(data));updateUI();}
+function defaultShops(){
+const defs=['抖音1店','抖音2店','抖音3店','快手MS','拼多多1店','拼多多2店','拼多多3店','拼多多4店','拼多多5店','天猫MS','天猫极氧'];
+const gr={'抖音1店':'抖音组','抖音2店':'抖音组','抖音3店':'抖音组','快手MS':'天猫组','拼多多1店':'拼多多组','拼多多2店':'拼多多组','拼多多3店':'拼多多组','拼多多4店':'拼多多组','拼多多5店':'拼多多组','天猫MS':'天猫组','天猫极氧':'天猫组'};
+if(!data.settings.shops||!data.settings.shops.length){data.settings.shops=defs;data.settings.shopGroups=gr;}
+if(!data.settings.thresholds)data.settings.thresholds={rateExcellent:15,rateGood:10,respExcellent:20,respGood:30,satExcellent:95,satGood:90};
+}
+
+/* ==================== UI CORE ==================== */
+function updateDateTime(){const n=new Date();document.getElementById('dateDisplay').textContent=n.toLocaleString('zh-CN',{hour12:false});}
+setInterval(updateDateTime,1000);updateDateTime();
+
+function switchTab(id){
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.getElementById('tab-'+id).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+// Safe event handling
+if(typeof event!=='undefined'&&event&&event.target){
+event.target.classList.add('active');
+}else{
+// Fallback: find nav item by onclick attribute
+const navItems=document.querySelectorAll('.nav-item');
+for(let i=0;i<navItems.length;i++){
+if(navItems[i].getAttribute('onclick')&&navItems[i].getAttribute('onclick').includes("'"+id+"'")){
+navItems[i].classList.add('active');break;
+}
+}
+}
+if(id==='checkin'){renderTemplates();renderSingleTasks();renderCalendar();}
+if(id==='weekly'){renderWeeklyFilters();renderWeeklyPanels();}
+if(id==='monthly'){renderMonthlyAll();}
+if(id==='todo')renderTodos();
+if(id==='data')renderDataCenter();
+if(id==='settings')renderSettings();
+}
+function switchMonthlyTab(el,id){}
+
+function updateUI(){
+const month=todayStr.slice(0,7);
+const week=getCurrentWeek();
+document.getElementById('checkInCount').textContent=Object.keys(data.checkIns).filter(d=>d.startsWith(month)).length;
+document.getElementById('todoDoneCount').textContent=data.todos.filter(t=>t.done).length;
+document.getElementById('weeklyCount').textContent=data.weeklyData[week]?.records?.length||0;
+document.getElementById('monthlyCount').textContent=data.monthlyData[month]?.records?.length||0;
+document.getElementById('cityDisplay').textContent=data.settings.city||'杭州';
+if(document.getElementById('weekPicker')){document.getElementById('weekPicker').value=week;updateWeekDisplay();}
+if(document.getElementById('monthPicker'))document.getElementById('monthPicker').value=month;
+}
+
+/* ==================== CALENDAR (same as before) ==================== */
+function getTasks(d){const x=localStorage.getItem('workPro_'+d);return x?JSON.parse(x):[];}
+function saveTasks(d,t){localStorage.setItem('workPro_'+d,JSON.stringify(t));}
+function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();}
+function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();}
+function renderCalendar(){
+const fd=new Date(currentYear,currentMonth,1),ld=new Date(currentYear,currentMonth+1,0);
+document.getElementById('monthLabel').textContent=currentYear+'年 '+(currentMonth+1)+'月';
+const el=document.getElementById('calendarDays');el.innerHTML='';
+for(let i=0;i<fd.getDay();i++)el.appendChild(document.createElement('div')).className='day-cell empty';
+for(let d=1;d<=ld.getDate();d++){
+const ds=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const t=getTasks(ds),c=t.filter(x=>x.done).length,tt=t.length;
+const cell=document.createElement('div');cell.className='day-cell';
+const dw=new Date(currentYear,currentMonth,d).getDay();
+if(dw===0)cell.classList.add('sun-day');if(dw===6)cell.classList.add('sat-day');
+if(ds===todayStr)cell.classList.add('today');
+if(tt>0&&c===tt)cell.classList.add('all-done');else if(tt>0&&c>0)cell.classList.add('partial');
+cell.innerHTML=`<div class="day-num">${d}</div>${tt>0?`<div class="day-status">${c}/${tt}</div>`:''}`;
+cell.onclick=()=>openModal(ds);el.appendChild(cell);
+}
+let tt=0,tc=0;for(let d=1;d<=ld.getDate();d++){const ds=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const t=getTasks(ds);tt+=t.length;tc+=t.filter(x=>x.done).length;}
+document.getElementById('progressFill').style.width=tt>0?(tc/tt*100)+'%':'0%';
+document.getElementById('progressText').textContent=tt>0?`本月完成 ${tc}/${tt}`:'本月还没有任务';
+const tp=getTasks(todayStr);document.getElementById('todayTasksPreview').innerHTML=tp.length?tp.map(t=>`<div>${t.done?'✓':'○'} ${t.text}</div>`).join(''):'暂无任务';
+if(tp.length){document.getElementById('todayCheckStatus').textContent=`今日已打卡 ${tp.filter(t=>t.done).length}/${tp.length}`;document.getElementById('todayCheckStatus').style.color='#10b981';}else{document.getElementById('todayCheckStatus').textContent='今日未打卡';document.getElementById('todayCheckStatus').style.color='#64748b';}
+}
+function openModal(ds){selectedDate=ds;document.getElementById('modalTitle').textContent='今日打卡';document.getElementById('dateLabel').textContent=ds;renderTasks();document.getElementById('modalOverlay').classList.add('active');}
+function closeModal(e){if(!e||e.target===document.getElementById('modalOverlay')){document.getElementById('modalOverlay').classList.remove('active');selectedDate=null;}}
+function saveAndClose(){closeModal();renderCalendar();}
+function renderTasks(){const t=getTasks(selectedDate);document.getElementById('taskContainer').innerHTML=t.length?t.map((x,i)=>`<div class="task-item ${x.done?'completed':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggleTask(${i})"><div class="task-body"><div class="task-text">${x.text}</div></div><button class="delete-btn" onclick="deleteTask(${i})">×</button></div>`).join(''):'<div class="empty-state">还没有任务</div>';}
+function toggleTask(i){const t=getTasks(selectedDate);t[i].done=!t[i].done;saveTasks(selectedDate,t);renderTasks();renderCalendar();}
+function deleteTask(i){const t=getTasks(selectedDate);t.splice(i,1);saveTasks(selectedDate,t);renderTasks();renderCalendar();}
+function addTask(){const v=document.getElementById('newTaskInput').value.trim();if(!v)return;const t=getTasks(selectedDate);t.push({text:v,done:false,priority:'p3',type:'日常'});saveTasks(selectedDate,t);document.getElementById('newTaskInput').value='';renderTasks();renderCalendar();}
+function renderTemplates(){document.getElementById('templateList').innerHTML=TEMPLATES.map((t,i)=>`<div class="template-item" onclick="applyTemplate(${i})"><div class="t-name">${t.name}</div><div class="t-tasks">${t.tasks.join('、')}</div></div>`).join('');}
+function applyTemplate(i){if(!selectedDate)selectedDate=todayStr;const t=TEMPLATES[i];const x=getTasks(selectedDate);t.tasks.forEach(tt=>x.push({text:tt,done:false,priority:'p2',type:t.tags[0]}));saveTasks(selectedDate,x);renderTasks();renderCalendar();}
+function renderSingleTasks(){document.getElementById('singleTasks').innerHTML=SINGLE_TASKS.map((t,i)=>`<div class="single-task-item"><input type="checkbox" id="st${i}"><label for="st${i}">${t}</label></div>`).join('');}
+function addCheckedSingleTasks(){if(!selectedDate)selectedDate=todayStr;const t=getTasks(selectedDate);let a=0;SINGLE_TASKS.forEach((x,i)=>{if(document.getElementById('st'+i).checked){t.push({text:x,done:false,priority:'p3',type:'日常'});document.getElementById('st'+i).checked=false;a++;}});if(a){saveTasks(selectedDate,t);renderCalendar();alert(`已添加 ${a} 个任务`);}}
+function quickCheckIn(){selectedDate=todayStr;openModal(todayStr);}
+
+/* ==================== TODO ==================== */
+function renderTodos(){const td=data.todos.filter(t=>!t.done);document.getElementById('todoList').innerHTML=td.length?td.map(t=>`<div style="display:flex;align-items:center;padding:8px 0;gap:8px"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${t.id})" style="width:16px;height:16px"><span>${t.text}</span></div>`).join(''):'<p style="color:#94a3b8">暂无待办</p>';document.getElementById('allTodoList').innerHTML=td.length?td.map(t=>`<div style="display:flex;align-items:center;padding:8px 0;gap:8px"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${t.id})" style="width:16px;height:16px"><span>${t.text}</span></div>`).join(''):'<p style="color:#94a3b8">无待办</p>';}
+function toggleTodo(id){const t=data.todos.find(x=>x.id===id);if(t){t.done=!t.done;saveData();}}
+function addTodo(){const v=document.getElementById('newTodo').value.trim();if(!v)return;data.todos.push({id:Date.now(),text:v,done:false,date:todayStr});document.getElementById('newTodo').value='';saveData();}
+
+/* ==================== WEEKLY - NEW SHOP PANEL ==================== */
+function renderWeeklyFilters(){
+const g1=document.getElementById('wFilterGroup'),s1=document.getElementById('wFilterShop'),t1=document.getElementById('wFilterStaff');
+const cv=g1.value,sv=s1.value,tv=t1.value;
+// Groups from settings
+const gs=new Set(Object.values(data.settings.shopGroups||{}));
+g1.innerHTML='<option value="">全部分组</option>';
+Array.from(gs).sort().forEach(x=>g1.innerHTML+=`<option value="${x}"${x===cv?' selected':''}>${x}</option>`);
+// Shops from settings
+s1.innerHTML='<option value="">全部店铺</option>';
+(data.settings.shops||[]).forEach(x=>s1.innerHTML+=`<option value="${x}"${x===sv?' selected':''}>${x}</option>`);
+// Staff from all historical data
+const sts=new Set();
+Object.values(data.weeklyData).forEach(wd=>{if(wd&&wd.records)wd.records.forEach(r=>{if(r.staff)sts.add(r.staff);});});
+t1.innerHTML='<option value="">全部客服</option>';
+Array.from(sts).sort().forEach(x=>t1.innerHTML+=`<option value="${x}"${x===tv?' selected':''}>${x}</option>`);
+}
+function onFilterChange(){renderWeeklyPanels();}
+function clearFilters(){document.getElementById('wFilterGroup').value='';document.getElementById('wFilterShop').value='';document.getElementById('wFilterStaff').value='';renderWeeklyPanels();}
+
+function getFilteredWeeklyRecords(){
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+const wd=data.weeklyData[week];
+let r=wd?.records||[];
+const gf=document.getElementById('wFilterGroup').value;
+const sf=document.getElementById('wFilterShop').value;
+const tf=document.getElementById('wFilterStaff').value;
+if(gf)r=r.filter(x=>x.group===gf);
+if(sf)r=r.filter(x=>x.shop===sf);
+if(tf)r=r.filter(x=>x.staff===tf);
+return r;
+}
+
+function renderWeeklyPanels(){
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+const container=document.getElementById('weeklyPanels');
+const wd=data.weeklyData[week];
+const allRecs=wd?.records||[];
+const gf=document.getElementById('wFilterGroup').value;
+const sf=document.getElementById('wFilterShop').value;
+const tf=document.getElementById('wFilterStaff').value;
+
+// Build shop -> staff records map
+const shopRecsMap={};
+allRecs.forEach(r=>{
+if(gf&&r.group!==gf)return;
+if(sf&&r.shop!==sf)return;
+if(tf&&r.staff!==tf)return;
+if(!shopRecsMap[r.shop])shopRecsMap[r.shop]=[];
+shopRecsMap[r.shop].push(r);
+});
+
+// Get all shops from settings (presets)
+let shops=[...data.settings.shops];
+if(gf)shops=shops.filter(s=>(data.settings.shopGroups[s]||getGroup(s))===gf);
+if(sf)shops=shops.filter(s=>s===sf);
+
+// Sort: 快手MS放最后
+shops.sort((a,b)=>{
+if(a==='快手MS')return 1;
+if(b==='快手MS')return -1;
+return a.localeCompare(b,'zh-CN');
+});
+
+if(!shops.length){container.innerHTML='<p style="color:#94a3b8">暂无店铺</p>';document.getElementById('weeklySummary').innerHTML='';return;}
+
+let html='';
+shops.forEach(shop=>{
+const group=data.settings.shopGroups[shop]||getGroup(shop);
+const isOpen=openShops.has(shop);
+const recs=shopRecsMap[shop]||[];
+const sum=calcSummary(recs);
+html+=`<div class="shop-panel" id="shop-panel-${shop}">
+<div class="shop-header" onclick="toggleShop('${shop}')">
+<div class="shop-toggle ${isOpen?'open':''}">▶</div>
+<div class="shop-name">${shop}</div>
+<div class="shop-group" style="background:${group==='抖音组'?'#ff0050':group==='天猫组'?'#ff5000':group==='拼多多组'?'#e02e24':'#999'}">${group}</div>
+${recs.length?`<div class="shop-sum" style="font-size:12px;color:#666">${recs.length}人 接待:${sum.totalService}</div>`:'<div class="shop-sum" style="font-size:12px;color:#94a3b8">无数据</div>'}
+</div>
+<div class="shop-body ${isOpen?'open':''}" id="shop-body-${shop}">`;
+
+// Staff rows header
+html+=`<div class="staff-row" style="font-weight:600;color:#555;font-size:11px;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px">
+<div style="min-width:60px">客服</div><div>接待</div><div>响应</div><div>满意</div><div>询单</div><div>付款</div><div>转化</div><div>连带</div><div style="min-width:45px;text-align:center">汇总</div><div style="min-width:50px">备注</div><div style="width:24px"></div>
+</div>`;
+
+if(recs.length){
+recs.forEach(r=>{
+const realRate=r.inquiry?round(r.payment/r.inquiry*100):0;
+html+=`<div class="staff-row" data-shop="${shop}" data-staff="${r.staff}" style="margin-bottom:4px">
+<div class="staff-name" style="font-size:13px;min-width:60px">${r.staff}</div>
+<div><input type="number" class="inp-service" value="${r.service||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-response" value="${r.response||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-satisfaction" value="${r.satisfaction||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-inquiry" value="${r.inquiry||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-payment" value="${r.payment||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-rate" value="${r.rate||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div><input type="number" class="inp-sales" value="${r.sales||''}" placeholder="0" style="font-size:12px;padding:4px;width:100%"></div>
+<div style="font-size:11px;color:${rateColor(realRate)};min-width:45px;font-weight:600;text-align:center">${realRate}%</div>
+<div><input class="inp-note" value="${r.note||''}" placeholder="备注" style="font-size:11px;padding:3px;border:1px solid #eee;border-radius:3px;width:100%"></div>
+<div class="del-btn" style="width:24px;text-align:center;color:#f43f5e;cursor:pointer" onclick="deleteStaffRow('${shop}','${r.staff}')">×</div>
+</div>`;
+});
+// Shop subtotal row
+html+=`<div style="display:flex;gap:16px;padding:8px 0;margin-top:4px;border-top:1px dashed #ddd;font-size:12px;color:#666;background:#f8f9fa;border-radius:0 0 8px 8px">
+<span style="font-weight:600">本店小计：</span>
+<span>接待:${sum.totalService}</span>
+<span>响应:${sum.avgResponse}s</span>
+<span>转化:<b style="color:${rateColor(sum.realRate)}">${sum.realRate}%</b></span>
+<span>连带:${sum.totalSales}元</span>
+</div>`;
+}else{
+html+=`<div style="color:#94a3b8;font-size:12px;padding:8px 0">暂无客服，点击下方添加</div>`;
+}
+
+// Batch add staff
+html+=`<div style="margin-top:8px;display:flex;gap:6px;align-items:flex-start">
+<button class="add-staff-btn" onclick="toggleBatchAdd('${shop}')">+ 添加客服</button>
+<div id="batch-add-${shop}" style="display:none;flex:1">
+<textarea id="batch-staff-${shop}" placeholder="粘贴客服名字，支持多行或逗号分隔&#10;例如：小张,小李,小王" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;resize:vertical;min-height:40px"></textarea>
+<div style="display:flex;gap:6px;margin-top:4px">
+<button class="btn btn-p" onclick="confirmBatchAdd('${shop}')" style="font-size:11px;padding:3px 10px">批量添加</button>
+<button class="btn btn-s" onclick="toggleBatchAdd('${shop}')" style="font-size:11px;padding:3px 10px">取消</button>
+</div></div></div>`;
+
+html+=`</div></div>`;
+});
+
+container.innerHTML=html;
+renderWeeklySummary();
+renderWeeklyFilters();
+}
+
+function deleteShop(shop){
+if(!confirm(`确定删除店铺「${shop}」？\n这将同时删除该店铺下的所有客服数据和预设。`))return;
+data.settings.shops=data.settings.shops.filter(s=>s!==shop);
+delete data.settings.shopGroups[shop];
+delete data.settings.staffMap[shop];
+Object.keys(data.weeklyData).forEach(week=>{
+if(data.weeklyData[week]&&data.weeklyData[week].records){
+data.weeklyData[week].records=data.weeklyData[week].records.filter(r=>r.shop!==shop);
+}
+});
+openShops.delete(shop);
+saveData();renderWeeklyPanels();
+}
+function copyLastWeek(){
+const week=document.getElementById('weekPicker').value;if(!week){alert('请选择周次');return;}
+const parts=week.split('-W');
+const year=parseInt(parts[0]),wk=parseInt(parts[1]);
+let lastWeek;if(wk>1){lastWeek=year+'-W'+String(wk-1).padStart(2,'0');}else{lastWeek=(year-1)+'-W52';}
+const lwd=data.weeklyData[lastWeek];
+if(!lwd||!lwd.records||!lwd.records.length){alert('上周无数据可复制');return;}
+if(!confirm(`复制上周(${lastWeek})的${lwd.records.length}条数据？\n数据值将清零，只保留店铺和客服结构。`))return;
+const newRecs=lwd.records.map(r=>({shop:r.shop,staff:r.staff,group:r.group||getGroup(r.shop),service:0,response:0,satisfaction:0,inquiry:0,payment:0,rate:0,sales:0,note:''}));
+data.weeklyData[week]={records:newRecs,saveTime:new Date().toISOString()};
+newRecs.forEach(r=>openShops.add(r.shop));
+saveData();renderWeeklyPanels();alert('已复制上周结构，请填写本周数据');
+}
+function toggleShop(shop){if(openShops.has(shop))openShops.delete(shop);else openShops.add(shop);renderWeeklyPanels();}
+function addShopFromInput(){
+const shop=document.getElementById('newShopName').value.trim();if(!shop){alert('请输入店铺名称');return;}
+if(!data.settings.shops.includes(shop)){
+data.settings.shops.push(shop);
+data.settings.shopGroups[shop]='未分组';
+saveData();
+}
+openShops.add(shop);
+document.getElementById('newShopName').value='';
+renderWeeklyPanels();
+}
+function toggleBatchAdd(shop){
+const el=document.getElementById('batch-add-'+shop);
+if(el)el.style.display=el.style.display==='none'?'block':'none';
+const ta=document.getElementById('batch-staff-'+shop);
+if(ta){ta.value='';if(el&&el.style.display==='block')ta.focus();}
+}
+function confirmBatchAdd(shop){
+const text=document.getElementById('batch-staff-'+shop).value.trim();
+if(!text){alert('请输入客服名字');return;}
+const names=text.split(/[,，\n]/).map(s=>s.trim()).filter(s=>s);
+if(!names.length){alert('未识别到有效名字');return;}
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+if(!data.weeklyData[week])data.weeklyData[week]={records:[]};
+let added=0;
+names.forEach(staff=>{
+const exists=data.weeklyData[week].records.find(r=>r.shop===shop&&r.staff===staff);
+if(!exists){
+data.weeklyData[week].records.push({shop,staff,group:getGroup(shop),service:0,response:0,satisfaction:0,inquiry:0,payment:0,rate:0,sales:0,note:''});
+added++;
+}
+});
+openShops.add(shop);
+if(added){saveData();renderWeeklyPanels();alert(`已添加 ${added} 位客服`);}
+else{alert('这些客服已存在');}
+}
+function addStaffToShop(shop){
+const el=document.getElementById('add-staff-'+shop);
+if(el)el.style.display='block';
+const input=document.getElementById('staff-input-'+shop);
+if(input){input.value='';input.focus();}
+}
+function confirmAddStaff(shop){
+const staff=document.getElementById('staff-input-'+shop).value.trim();
+if(!staff){alert('请输入客服姓名');return;}
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+if(!data.weeklyData[week])data.weeklyData[week]={records:[]};
+data.weeklyData[week].records.push({shop,staff,group:getGroup(shop),service:0,response:0,satisfaction:0,inquiry:0,payment:0,rate:0,sales:0,note:''});
+openShops.add(shop);
+const el=document.getElementById('add-staff-'+shop);
+if(el)el.style.display='none';
+renderWeeklyPanels();
+}
+function cancelAddStaff(shop){
+const el=document.getElementById('add-staff-'+shop);
+if(el)el.style.display='none';
+}
+function deleteStaffRow(shop,staff){
+if(!confirm(`确定删除 ${shop} - ${staff} 的数据？`))return;
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+if(data.weeklyData[week]){data.weeklyData[week].records=data.weeklyData[week].records.filter(r=>!(r.shop===shop&&r.staff===staff));saveData();renderWeeklyPanels();}
+}
+
+function saveWeeklyData(){
+const week=document.getElementById('weekPicker').value;if(!week){alert('请选择周次');return;}
+const recs=[];
+let errors=[];
+document.querySelectorAll('.staff-row[data-shop]').forEach(row=>{
+const shop=row.dataset.shop;
+const staff=row.querySelector('.staff-name').textContent;
+if(!staff)return;
+const service=num(row.querySelector('.inp-service')?.value);
+const response=num(row.querySelector('.inp-response')?.value);
+const satisfaction=num(row.querySelector('.inp-satisfaction')?.value);
+const inquiry=num(row.querySelector('.inp-inquiry')?.value);
+const payment=num(row.querySelector('.inp-payment')?.value);
+const rate=num(row.querySelector('.inp-rate')?.value);
+const sales=num(row.querySelector('.inp-sales')?.value);
+const note=row.querySelector('.inp-note')?.value||'';
+if(service<0)errors.push(shop+'-'+staff+'：接待量不能为负数');
+if(response<0)errors.push(shop+'-'+staff+'：响应时间不能为负数');
+if(satisfaction<0||satisfaction>100)errors.push(shop+'-'+staff+'：满意度需在0-100之间');
+if(payment>service)errors.push(shop+'-'+staff+'：付款数('+payment+')不能大于接待量('+service+')');
+if(inquiry>0&&payment>inquiry)errors.push(shop+'-'+staff+'：付款数('+payment+')大于询单数('+inquiry+')，转化率将超过100%');
+recs.push({shop,staff,group:getGroup(shop),service,response,satisfaction,inquiry,payment,rate,sales,note});
+});
+if(errors.length){alert('数据校验未通过：\n'+errors.join('\n'));return;}
+if(!recs.length){alert('请先添加数据');return;}
+data.weeklyData[week]={records:recs,saveTime:new Date().toISOString()};
+saveData();
+alert('周报已保存，共'+recs.length+'条记录');
+}
+
+function calcSummary(recs){
+if(!recs||!recs.length)return{totalService:0,avgResponse:0,avgSatisfaction:0,totalInquiry:0,totalPayment:0,realRate:0,totalSales:0,count:0};
+const ts=recs.reduce((s,r)=>s+num(r.service),0);
+const tr=recs.reduce((s,r)=>s+num(r.response),0);
+const tu=recs.reduce((s,r)=>s+num(r.satisfaction),0);
+const ti=recs.reduce((s,r)=>s+num(r.inquiry),0);
+const tp=recs.reduce((s,r)=>s+num(r.payment),0);
+const tl=recs.reduce((s,r)=>s+num(r.sales),0);
+return{totalService:ts,avgResponse:recs.length?round(tr/recs.length):0,avgSatisfaction:recs.length?round(tu/recs.length):0,totalInquiry:ti,totalPayment:tp,realRate:ti?round(tp/ti*100):0,totalSales:tl,count:recs.length};
+}
+
+function getThreshold(key){return(data.settings.thresholds||{})[key]||{rateExcellent:15,rateGood:10,respExcellent:20,respGood:30,satExcellent:95,satGood:90}[key];}
+function rateColor(rate){const ex=getThreshold('rateExcellent'),gd=getThreshold('rateGood');return rate>=ex?'#4caf50':rate>=gd?'#f39c12':'#f44336';}
+function respColor(resp){const ex=getThreshold('respExcellent'),gd=getThreshold('respGood');return resp<=ex?'#4caf50':resp<=gd?'#f39c12':'#f44336';}
+function satColor(sat){const ex=getThreshold('satExcellent'),gd=getThreshold('satGood');return sat>=ex?'#4caf50':sat>=gd?'#f39c12':'#f44336';}
+
+function renderWeeklySummary(){
+const recs=getFilteredWeeklyRecords();
+const s=calcSummary(recs);
+const staffList=recs.filter(r=>r.staff).map(r=>({...r,realRate:r.inquiry?round(r.payment/r.inquiry*100):0}));
+const bestRate=staffList.length?[...staffList].sort((a,b)=>b.realRate-a.realRate)[0]:null;
+const worstRate=staffList.length?[...staffList].sort((a,b)=>a.realRate-b.realRate)[0]:null;
+const bestResponse=staffList.length?[...staffList].filter(r=>r.response>0).sort((a,b)=>a.response-b.response)[0]:null;
+const bestSales=staffList.length?[...staffList].sort((a,b)=>b.sales-a.sales)[0]:null;
+const bestSatisfaction=staffList.length?[...staffList].filter(r=>r.satisfaction>0).sort((a,b)=>b.satisfaction-a.satisfaction)[0]:null;
+
+let html='<div style="margin-top:20px"><div style="font-size:15px;font-weight:600;margin-bottom:12px">数据汇总</div>';
+
+// Key metrics cards - 4 core KPIs
+html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">`;
+html+=`<div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:12px;padding:16px;text-align:center">
+<div style="font-size:12px;opacity:.9">实际转化率</div>
+<div style="font-size:28px;font-weight:700;margin:4px 0">${s.realRate}%</div>
+<div style="font-size:11px;opacity:.8">${s.totalInquiry?`询单${s.totalInquiry} 付款${s.totalPayment}`:'暂无数据'}</div>
+</div>`;
+html+=`<div style="background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:#fff;border-radius:12px;padding:16px;text-align:center">
+<div style="font-size:12px;opacity:.9">平均响应</div>
+<div style="font-size:28px;font-weight:700;margin:4px 0">${s.avgResponse}s</div>
+<div style="font-size:11px;opacity:.8">${s.count?`共${s.count}位客服`:'暂无数据'}</div>
+</div>`;
+html+=`<div style="background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff;border-radius:12px;padding:16px;text-align:center">
+<div style="font-size:12px;opacity:.9">连带销售总额</div>
+<div style="font-size:28px;font-weight:700;margin:4px 0">${s.totalSales}</div>
+<div style="font-size:11px;opacity:.8">元</div>
+</div>`;
+html+=`<div style="background:linear-gradient(135deg,#43e97b 0%,#38f9d7 100%);color:#fff;border-radius:12px;padding:16px;text-align:center">
+<div style="font-size:12px;opacity:.9">平均满意度</div>
+<div style="font-size:28px;font-weight:700;margin:4px 0">${s.avgSatisfaction}%</div>
+<div style="font-size:11px;opacity:.8">${s.count?`共${s.count}位客服`:'暂无数据'}</div>
+</div>`;
+html+=`</div>`;
+
+// Rankings
+if(staffList.length){
+html+=`<div style="background:#f8f9fa;border-radius:10px;padding:14px;margin-bottom:16px">
+<div style="font-size:14px;font-weight:600;margin-bottom:10px">🏆 本周排名</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">`;
+if(bestRate)html+=`<div style="background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px">转化率最高</span><span style="font-size:13px;font-weight:600;color:#10b981">${bestRate.staff} ${bestRate.realRate}%</span></div>`;
+if(worstRate)html+=`<div style="background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px">转化率最低</span><span style="font-size:13px;font-weight:600;color:#f43f5e">${worstRate.staff} ${worstRate.realRate}%</span></div>`;
+if(bestResponse)html+=`<div style="background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px">响应最快</span><span style="font-size:13px;font-weight:600;color:#10b981">${bestResponse.staff} ${bestResponse.response}s</span></div>`;
+if(bestSales)html+=`<div style="background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px">连带销售最高</span><span style="font-size:13px;font-weight:600;color:#38bdf8">${bestSales.staff} ${bestSales.sales}元</span></div>`;
+if(bestSatisfaction)html+=`<div style="background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px">满意度最高</span><span style="font-size:13px;font-weight:600;color:#10b981">${bestSatisfaction.staff} ${bestSatisfaction.satisfaction}%</span></div>`;
+html+=`</div></div>`;
+}
+
+// Group and Shop cards
+html+=`<div class="sum-cards">`;
+
+// Group cards
+const byGroup={};
+recs.forEach(r=>{const g=r.group||'未分组';if(!byGroup[g])byGroup[g]=[];byGroup[g].push(r);});
+Object.entries(byGroup).forEach(([g,rr])=>{
+const sg=calcSummary(rr);
+html+=`<div class="sum-card" onclick="filterByGroup('${g}')"><div class="sc-title">${g}<span class="sc-group">${rr.length}人</span></div>
+<div class="sc-row"><span>接待量</span><span class="sc-val">${sg.totalService}</span></div>
+<div class="sc-row"><span>转化率</span><span class="sc-val" style="color:${rateColor(sg.realRate)}">${sg.realRate}%</span></div>
+<div class="sc-row"><span>连带销售</span><span class="sc-val">${sg.totalSales}元</span></div>
+</div>`;
+});
+
+// Shop cards
+const byShop={};
+recs.forEach(r=>{if(!byShop[r.shop])byShop[r.shop]=[];byShop[r.shop].push(r);});
+Object.entries(byShop).forEach(([sh,rr])=>{
+const sg=calcSummary(rr);
+html+=`<div class="sum-card" onclick="filterByShop('${sh}')"><div class="sc-title">${sh}<span class="sc-group">${rr[0].group||getGroup(sh)}</span></div>
+<div class="sc-row"><span>接待量</span><span class="sc-val">${sg.totalService}</span></div>
+<div class="sc-row"><span>转化率</span><span class="sc-val" style="color:${rateColor(sg.realRate)}">${sg.realRate}%</span></div>
+<div class="sc-row"><span>连带销售</span><span class="sc-val">${sg.totalSales}元</span></div>
+</div>`;
+});
+
+html+='</div></div>';
+document.getElementById('weeklySummary').innerHTML=html;
+}
+function filterByGroup(g){document.getElementById('wFilterGroup').value=g;renderWeeklyPanels();}
+function filterByShop(s){document.getElementById('wFilterShop').value=s;renderWeeklyPanels();}
+
+/* ==================== PASTE ==================== */
+function showPasteModal(){document.getElementById('pasteModal').style.display='flex';}
+function closePasteModal(){document.getElementById('pasteModal').style.display='none';document.getElementById('pasteData').value='';}
+function parsePasteData(){
+const text=document.getElementById('pasteData').value.trim();if(!text){alert('请粘贴数据');return;}
+const lines=text.split(/\n/).filter(l=>l.trim());if(lines.length<2){alert('数据不足');return;}
+// Detect delimiter: tab, comma, or multiple spaces
+const headerLine=lines[0];
+let delimiter=/\t/;
+if(headerLine.includes(',')){delimiter=/,/;}else if(headerLine.match(/  +/)){delimiter=/  +/;}
+const headers=headerLine.split(delimiter).map(h=>h.trim().replace(/^["']|["']$/g,'').replace(/\s/g,''));
+// Enhanced field mapping with many variants
+const hm={};
+headers.forEach((h,i)=>{
+const hl=h.toLowerCase();
+if(hl.includes('店铺')||hl.includes('店名')||hl.includes('店铺名')||hl.includes('店铺名称')||hl.includes('store')||hl.includes('shop'))hm.shop=i;
+else if(hl.includes('客服')||hl.includes('员工')||hl.includes('客服名')||hl.includes('客服姓名')||hl.includes('接待人')||hl.includes('客服名称')||hl.includes('staff')||hl.includes('客服名字'))hm.staff=i;
+else if(hl.includes('接待')||hl.includes('接待量')||hl.includes('接待人数')||hl.includes('会话量')||hl.includes('咨询量')||hl.includes('接待数')||hl.includes('服务人数')||hl.includes('会话数'))hm.service=i;
+else if(hl.includes('响应')||hl.includes('回复')||hl.includes('平均响应')||hl.includes('响应时长')||hl.includes('回复速度')||hl.includes('平响')||hl.includes('平均回复')||hl.includes('response'))hm.response=i;
+else if(hl.includes('满意')||hl.includes('满意度')||hl.includes('好评')||hl.includes('评价')||hl.includes('满意率')||hl.includes('服务评分')||hl.includes('satisfaction'))hm.satisfaction=i;
+else if(hl.includes('询单')||hl.includes('咨询')||hl.includes('询价')||hl.includes('询盘')||hl.includes('询单数')||hl.includes('咨询数')||hl.includes('inquiry'))hm.inquiry=i;
+else if(hl.includes('付款')||hl.includes('支付')||hl.includes('成交')||hl.includes('下单')||hl.includes('付款数')||hl.includes('成交数')||hl.includes('payment'))hm.payment=i;
+else if(hl.includes('转化')||hl.includes('转化率')||hl.includes('成交率')||hl.includes('下单率')||hl.includes('转换率')||hl.includes('rate'))hm.rate=i;
+else if(hl.includes('连带')||hl.includes('销售')||hl.includes('销售额')||hl.includes('连带销售')||hl.includes('连带销售额')||hl.includes('成交金额')||hl.includes('sales')||hl.includes('金额'))hm.sales=i;
+});
+if(Object.keys(hm).length===0){alert('未能识别字段，请确保包含表头行');return;}
+const week=document.getElementById('weekPicker').value||getCurrentWeek();if(!data.weeklyData[week])data.weeklyData[week]={records:[]};
+let added=0,updated=0;
+lines.slice(1).forEach(line=>{
+const cells=line.split(delimiter).map(c=>c.trim().replace(/^["']|["']$/g,''));
+if(cells.length<2)return;
+// Try combined shop-staff field (e.g. "抖音1店-小张" or "抖音1店_小张")
+let shop='',staff='';
+if(hm.shop!==undefined&&hm.staff!==undefined){shop=cells[hm.shop]||'';staff=cells[hm.staff]||'';}
+else if(hm.shop!==undefined){const val=cells[hm.shop]||'';const sep=val.match(/[-_\/\|]/);if(sep){const parts=val.split(sep[0]);shop=parts[0].trim();staff=parts.slice(1).join(sep[0]).trim();}else{shop=val;}}
+if(!shop)return;
+// Try to match shop from settings if not exact
+if(!data.settings.shops.includes(shop)){
+const matched=data.settings.shops.find(s=>shop.includes(s)||s.includes(shop));
+if(matched)shop=matched;
+}
+const rec={shop,staff:staff||'未命名',group:getGroup(shop),service:num(cells[hm.service]),response:num(cells[hm.response]),satisfaction:num(cells[hm.satisfaction]),inquiry:num(cells[hm.inquiry]),payment:num(cells[hm.payment]),rate:num(cells[hm.rate]),sales:num(cells[hm.sales]),note:''};
+const existing=data.weeklyData[week].records.findIndex(r=>r.shop===shop&&r.staff===rec.staff);
+if(existing>=0){data.weeklyData[week].records[existing]=rec;updated++;}else{data.weeklyData[week].records.push(rec);added++;}
+openShops.add(shop);
+});
+saveData();closePasteModal();renderWeeklyPanels();
+alert(`识别完成！新增 ${added} 条，更新 ${updated} 条`);
+}
+
+/* ==================== MONTHLY - NEW ==================== */
+let openMonths=new Set();
+function renderMonthlyAll(){
+try{
+const container=document.getElementById('monthlyAllMonths');
+if(!container){console.error('monthlyAllMonths not found');return;}
+// Collect all months that have weekly data
+const monthMap={};
+Object.keys(data.weeklyData||{}).forEach(week=>{
+const parts=week.split('-W');
+if(parts.length<2)return;
+const year=parts[0];
+const weekNum=parseInt(parts[1]);
+if(isNaN(weekNum))return;
+const d=new Date(parseInt(year),0,1);
+const dayOffset=(weekNum-1)*7-d.getDay()+1;
+d.setDate(d.getDate()+dayOffset);
+const monthKey=`${year}年${d.getMonth()+1}月`;
+if(!monthMap[monthKey])monthMap[monthKey]={year:parseInt(year),month:d.getMonth()+1,weeks:[]};
+monthMap[monthKey].weeks.push(week);
+});
+
+const sortedMonths=Object.entries(monthMap).sort((a,b)=>{
+if(a[1].year!==b[1].year)return b[1].year-a[1].year;
+return b[1].month-a[1].month;
+});
+
+if(!sortedMonths.length){container.innerHTML='<p style="color:#94a3b8;padding:20px;text-align:center">暂无月报数据，请先在周报中录入数据</p>';return;}
+
+let html='';
+sortedMonths.forEach(([monthLabel,info])=>{
+const isOpen=openMonths.has(monthLabel);
+let allRecs=[];
+info.weeks.forEach(w=>{if(data.weeklyData[w]&&data.weeklyData[w].records)allRecs=allRecs.concat(data.weeklyData[w].records);});
+const monthSum=calcSummary(allRecs);
+
+html+=`<div style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:12px;overflow:hidden">
+<div style="display:flex;align-items:center;padding:14px 16px;background:#f8f9fa;cursor:pointer;gap:12px" onclick="toggleMonth('${monthLabel}')">
+<div style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666;transition:transform .2s;transform:${isOpen?'rotate(90deg)':'rotate(0deg)'}">▶</div>
+<div style="font-size:15px;font-weight:600;flex:1">${monthLabel}</div>
+<div style="font-size:12px;color:#666;display:flex;gap:12px">
+<span>接待:${monthSum.totalService}</span>
+<span>转化:<b style="color:${rateColor(monthSum.realRate)}">${monthSum.realRate}%</b></span>
+<span>连带:${monthSum.totalSales}元</span>
+<span>${info.weeks.length}周</span>
+</div>
+</div>
+<div style="display:${isOpen?'block':'none'};padding:16px;background:#fff">`;
+
+info.weeks.sort().forEach(week=>{
+const wd=data.weeklyData[week];
+if(!wd||!wd.records)return;
+const weekSum=calcSummary(wd.records);
+html+=`<div style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+<div style="font-size:14px;font-weight:600">${weekToChinese(week)} <span style="color:#94a3b8;font-size:12px">(${week})</span></div>
+<div style="font-size:12px;color:#666">
+<span>接待:${weekSum.totalService}</span>
+<span style="margin-left:10px">转化:<b style="color:${rateColor(weekSum.realRate)}">${weekSum.realRate}%</b></span>
+<span style="margin-left:10px">连带:${weekSum.totalSales}元</span>
+</div>
+</div>`;
+
+const byGroup={};
+wd.records.forEach(r=>{const g=r.group||'未分组';if(!byGroup[g])byGroup[g]=[];byGroup[g].push(r);});
+html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">`;
+Object.entries(byGroup).forEach(([g,rr])=>{
+const sg=calcSummary(rr);
+html+=`<div style="background:#fff;border-radius:6px;padding:8px 12px;border:1px solid #e8e8e8;min-width:120px">
+<div style="font-size:11px;color:#888;margin-bottom:2px">${g}</div>
+<div style="font-size:13px;font-weight:600">${sg.totalService}接待</div>
+<div style="font-size:11px;color:${rateColor(sg.realRate)}">转化${sg.realRate}%</div>
+<div style="font-size:11px;color:#666">连带${sg.totalSales}元</div>
+</div>`;
+});
+html+=`</div>`;
+
+const byShop={};
+wd.records.forEach(r=>{if(!byShop[r.shop])byShop[r.shop]=[];byShop[r.shop].push(r);});
+html+=`<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+Object.entries(byShop).forEach(([sh,rr])=>{
+const sg=calcSummary(rr);
+html+=`<div style="background:#fff;border-radius:6px;padding:6px 10px;border:1px solid #e8e8e8">
+<div style="font-size:12px;font-weight:500">${sh}</div>
+<div style="font-size:11px;color:#666">${rr.length}人 接待${sg.totalService} 转化<b style="color:${rateColor(sg.realRate)}">${sg.realRate}%</b></div>
+</div>`;
+});
+html+=`</div></div>`;
+});
+
+html+=`<div style="margin-top:12px;padding:12px;background:#fff;border-radius:8px;border:1px solid #e8e8e8">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px">${monthLabel} 全月分组汇总</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+const monthByGroup={};
+allRecs.forEach(r=>{const g=r.group||'未分组';if(!monthByGroup[g])monthByGroup[g]=[];monthByGroup[g].push(r);});
+Object.entries(monthByGroup).forEach(([g,rr])=>{
+const sg=calcSummary(rr);
+html+=`<div style="background:#f8f9fa;border-radius:6px;padding:10px 14px;min-width:140px">
+<div style="font-size:12px;font-weight:600;margin-bottom:4px">${g}</div>
+<div style="font-size:11px;color:#666">接待:${sg.totalService} 响应:${sg.avgResponse}s</div>
+<div style="font-size:11px;color:${rateColor(sg.realRate)}">转化:${sg.realRate}% 连带:${sg.totalSales}元</div>
+</div>`;
+});
+html+=`</div></div>`;
+
+html+=`</div></div>`;
+});
+
+container.innerHTML=html;
+}catch(err){
+console.error('renderMonthlyAll error:',err);
+const container=document.getElementById('monthlyAllMonths');
+if(container)container.innerHTML='<p style="color:#f43f5e;padding:20px;text-align:center">加载出错，请刷新页面重试</p>';
+}
+}
+function toggleMonth(label){if(openMonths.has(label))openMonths.delete(label);else openMonths.add(label);renderMonthlyAll();}
+function onMonthPickerChange(){
+const val=document.getElementById('monthPicker').value;
+if(!val)return;
+const year=parseInt(val.split('-')[0]),m=parseInt(val.split('-')[1]);
+const label=`${year}年${m}月`;
+openMonths.add(label);
+renderMonthlyAll();
+}
+
+function autoBuildMonthly(){
+const monthVal=document.getElementById('monthPicker').value;if(!monthVal){alert('请选择月份');return;}
+const year=parseInt(monthVal.split('-')[0]),m=parseInt(month.split('-')[1]);
+const weeks=getWeeksInMonth(year,m);
+let all=[];
+weeks.forEach(w=>{const wd=data.weeklyData[w];if(wd&&wd.records)all=all.concat(wd.records);});
+if(!all.length){alert('该月份暂无周报数据');return;}
+const monthKey=`${year}年${m}月`;
+// Persist monthly data
+const byGroup={};all.forEach(r=>{const g=r.group||'未分组';if(!byGroup[g])byGroup[g]=[];byGroup[g].push(r);});
+const byShop={};all.forEach(r=>{if(!byShop[r.shop])byShop[r.shop]=[];byShop[r.shop].push(r);});
+data.monthlyData[monthKey]={
+records:all,
+weeks:weeks,
+summary:calcSummary(all),
+groupSummary:Object.entries(byGroup).map(([g,rr])=>({group:g,...calcSummary(rr)})),
+shopSummary:Object.entries(byShop).map(([sh,rr])=>({shop:sh,...calcSummary(rr)})),
+buildTime:new Date().toISOString()
+};
+openMonths.add(monthKey);
+saveData();
+alert(`已生成${monthKey}月报并保存到数据中心，点击下方月份查看`);
+renderMonthlyAll();
+}
+
+/* ==================== SETTINGS ==================== */
+function renderSettings(){
+document.getElementById('citySetting').value=data.settings.city||'杭州';
+document.getElementById('shopList').value=(data.settings.shops||[]).join('\n');
+const sg=[];Object.entries(data.settings.shopGroups||{}).forEach(([k,v])=>{sg.push(k+'='+v);});
+document.getElementById('shopGroupList').value=sg.join('\n');
+const sm=[];Object.entries(data.settings.staffMap||{}).forEach(([k,v])=>{if(Array.isArray(v))sm.push(k+'='+v.join(','));});
+document.getElementById('shopStaffList').value=sm.join('\n');
+const th=data.settings.thresholds||{};
+document.getElementById('rateExcellent').value=th.rateExcellent||15;
+document.getElementById('rateGood').value=th.rateGood||10;
+document.getElementById('respExcellent').value=th.respExcellent||20;
+document.getElementById('respGood').value=th.respGood||30;
+document.getElementById('satExcellent').value=th.satExcellent||95;
+document.getElementById('satGood').value=th.satGood||90;
+}
+function saveSettings(){
+data.settings.city=document.getElementById('citySetting').value;
+data.settings.shops=document.getElementById('shopList').value.split('\n').filter(s=>s.trim());
+data.settings.shopGroups={};
+document.getElementById('shopGroupList').value.split('\n').filter(s=>s.trim()).forEach(line=>{const p=line.split('=');if(p.length>=2)data.settings.shopGroups[p[0].trim()]=p[1].trim();});
+data.settings.staffMap={};
+document.getElementById('shopStaffList').value.split('\n').filter(s=>s.trim()).forEach(line=>{const p=line.split('=');if(p.length>=2)data.settings.staffMap[p[0].trim()]=p[1].split(',').map(s=>s.trim()).filter(s=>s);});
+data.settings.thresholds={
+rateExcellent:num(document.getElementById('rateExcellent').value)||15,
+rateGood:num(document.getElementById('rateGood').value)||10,
+respExcellent:num(document.getElementById('respExcellent').value)||20,
+respGood:num(document.getElementById('respGood').value)||30,
+satExcellent:num(document.getElementById('satExcellent').value)||95,
+satGood:num(document.getElementById('satGood').value)||90
+};
+saveData();
+alert('设置已保存');
+}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='workstation_backup_'+todayStr+'.json';a.click();URL.revokeObjectURL(url);}
+function importData(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=(e)=>{try{const d=JSON.parse(e.target.result);if(confirm('导入将覆盖现有数据，确定继续？')){data=d;saveData();alert('导入成功');}}catch(err){alert('文件格式错误');}};reader.readAsText(file);}
+
+function exportWeeklyCSV(){
+const week=document.getElementById('weekPicker').value||getCurrentWeek();
+const wd=data.weeklyData[week];
+if(!wd||!wd.records||!wd.records.length){alert('当前周无数据可导出');return;}
+let csv='\uFEFF';// BOM for Excel
+const headers=['店铺','分组','客服','接待量','响应(秒)','满意度(%)','询单数','付款数','转化率(%)','连带销售额(元)','备注'];
+csv+=headers.join(',')+'\n';
+wd.records.forEach(r=>{
+csv+=`"${r.shop||''}","${r.group||''}","${r.staff||''}","${r.service||0}","${r.response||0}","${r.satisfaction||0}","${r.inquiry||0}","${r.payment||0}","${r.rate||0}","${r.sales||0}","${r.note||''}"\n`;
+});
+// Add summary
+const s=calcSummary(wd.records);
+csv+=`\n"全周汇总","","","${s.totalService}","${s.avgResponse}","${s.avgSatisfaction}","${s.totalInquiry}","${s.totalPayment}","${s.realRate}","${s.totalSales}",""\n`;
+const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='周报_'+week+'.csv';a.click();URL.revokeObjectURL(url);
+}
+
+function exportMonthlyCSV(){
+const container=document.getElementById('monthlyAllMonths');
+if(!container||!container.innerHTML.trim()){alert('暂无月报数据可导出');return;}
+const monthVal=document.getElementById('monthPicker').value;
+if(!monthVal){alert('请选择月份');return;}
+const year=parseInt(monthVal.split('-')[0]),m=parseInt(monthVal.split('-')[1]);
+const weeks=getWeeksInMonth(year,m);
+let allRecs=[];
+weeks.forEach(w=>{if(data.weeklyData[w]&&data.weeklyData[w].records)allRecs=allRecs.concat(data.weeklyData[w].records);});
+if(!allRecs.length){alert('该月份暂无数据可导出');return;}
+let csv='\uFEFF';// BOM for Excel
+const headers=['周次','店铺','分组','客服','接待量','响应(秒)','满意度(%)','询单数','付款数','转化率(%)','连带销售额(元)','备注'];
+csv+=headers.join(',')+'\n';
+weeks.forEach(w=>{
+if(data.weeklyData[w]&&data.weeklyData[w].records){
+data.weeklyData[w].records.forEach(r=>{
+csv+=`"${w}","${r.shop||''}","${r.group||''}","${r.staff||''}","${r.service||0}","${r.response||0}","${r.satisfaction||0}","${r.inquiry||0}","${r.payment||0}","${r.rate||0}","${r.sales||0}","${r.note||''}"\n`;
+});
+}
+});
+// Monthly summary by group
+const byGroup={};allRecs.forEach(r=>{const g=r.group||'未分组';if(!byGroup[g])byGroup[g]=[];byGroup[g].push(r);});
+csv+=`\n"全月分组汇总","",""\n"分组","接待量","平均响应","平均满意度","转化率","连带销售"\n`;
+Object.entries(byGroup).forEach(([g,rr])=>{const sg=calcSummary(rr);csv+=`"${g}","${sg.totalService}","${sg.avgResponse}","${sg.avgSatisfaction}","${sg.realRate}","${sg.totalSales}"\n`;});
+// Monthly summary by shop
+const byShop={};allRecs.forEach(r=>{if(!byShop[r.shop])byShop[r.shop]=[];byShop[r.shop].push(r);});
+csv+=`\n"全月店铺汇总","",""\n"店铺","接待量","平均响应","平均满意度","转化率","连带销售"\n`;
+Object.entries(byShop).forEach(([sh,rr])=>{const sg=calcSummary(rr);csv+=`"${sh}","${sg.totalService}","${sg.avgResponse}","${sg.avgSatisfaction}","${sg.realRate}","${sg.totalSales}"\n`;});
+const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='月报_'+year+'年'+m+'月.csv';a.click();URL.revokeObjectURL(url);
+}
+
+/* ==================== DATA CENTER ==================== */
+function switchDataTab(el,id){
+document.querySelectorAll('#tab-data .tab').forEach(t=>t.classList.remove('active'));
+el.classList.add('active');
+document.getElementById('data-tab-history-weekly').style.display='none';
+document.getElementById('data-tab-history-monthly').style.display='none';
+document.getElementById('data-tab-data-validate').style.display='none';
+document.getElementById('data-tab-'+id).style.display='block';
+if(id==='history-weekly')renderHistoryWeekly();
+if(id==='history-monthly')renderHistoryMonthly();
+if(id==='data-validate')validateAllData();
+}
+function renderDataCenter(){
+// Populate week picker with all weeks that have data
+const allWeeks=Object.keys(data.weeklyData).filter(w=>data.weeklyData[w]&&data.weeklyData[w].records&&data.weeklyData[w].records.length).sort().reverse();
+const weekPicker=document.getElementById('historyWeekPicker');
+if(weekPicker&&allWeeks.length){weekPicker.value=allWeeks[0];}
+renderHistoryWeekly();
+}
+function renderHistoryWeekly(){
+const week=document.getElementById('historyWeekPicker').value;
+const el=document.getElementById('historyWeeklyDetail');
+if(!week||!data.weeklyData[week]||!data.weeklyData[week].records||!data.weeklyData[week].records.length){
+el.innerHTML='<p style="color:#94a3b8;padding:20px;text-align:center">该周暂无数据</p>';return;
+}
+const wd=data.weeklyData[week];
+const s=calcSummary(wd.records);
+let html='<div style="margin-bottom:12px"><b>'+weekToChinese(week)+'</b> <span style="color:#94a3b8;font-size:12px">('+week+')</span> 共'+wd.records.length+'条记录 保存于'+new Date(wd.saveTime).toLocaleString('zh-CN')+'</div>';
+html+='<table class="data-table"><thead><tr><th>店铺</th><th>分组</th><th>客服</th><th>接待</th><th>响应</th><th>满意度</th><th>询单</th><th>付款</th><th>转化</th><th>连带</th></tr></thead><tbody>';
+wd.records.forEach(r=>{
+html+=`<tr><td>${r.shop}</td><td>${r.group||'-'}</td><td>${r.staff}</td><td>${r.service}</td><td>${r.response}</td><td>${r.satisfaction}%</td><td>${r.inquiry}</td><td>${r.payment}</td><td style="color:${rateColor(r.inquiry?round(r.payment/r.inquiry*100):0)}">${r.inquiry?round(r.payment/r.inquiry*100):0}%</td><td>${r.sales}</td></tr>`;
+});
+html+=`</tbody></table><div style="margin-top:12px;padding:12px;background:#f8f9fa;border-radius:8px">
+<b>周汇总：</b>接待${s.totalService} | 平均响应${s.avgResponse}s | 满意度${s.avgSatisfaction}% | 转化${s.realRate}% | 连带${s.totalSales}元
+</div>`;
+el.innerHTML=html;
+}
+function renderHistoryMonthly(){
+const month=document.getElementById('historyMonthPicker').value;
+const el=document.getElementById('historyMonthlyDetail');
+if(!month){el.innerHTML='<p style="color:#94a3b8;padding:20px;text-align:center">请选择月份</p>';return;}
+const year=parseInt(month.split('-')[0]),m=parseInt(month.split('-')[1]);
+const weeks=getWeeksInMonth(year,m);
+let allRecs=[];
+weeks.forEach(w=>{if(data.weeklyData[w]&&data.weeklyData[w].records)allRecs=allRecs.concat(data.weeklyData[w].records);});
+if(!allRecs.length){el.innerHTML='<p style="color:#94a3b8;padding:20px;text-align:center">该月份暂无周报数据</p>';return;}
+const s=calcSummary(allRecs);
+let html=`<div style="margin-bottom:12px"><b>${year}年${m}月</b> 共${weeks.length}周 ${allRecs.length}条记录</div>`;
+// Week breakdown
+html+='<div style="margin-bottom:16px">';
+weeks.forEach(w=>{
+if(data.weeklyData[w]&&data.weeklyData[w].records){
+const ws=calcSummary(data.weeklyData[w].records);
+html+=`<div style="display:inline-block;margin:4px;padding:8px 12px;background:#f8f9fa;border-radius:6px;border:1px solid #e8e8e8">
+<b>${weekToChinese(w)}</b> <span style="color:#94a3b8;font-size:12px">(${w})</span> 接待${ws.totalService} 转化<b style="color:${rateColor(ws.realRate)}">${ws.realRate}%</b> 连带${ws.totalSales}元
+</div>`;
+}else{
+html+=`<div style="display:inline-block;margin:4px;padding:8px 12px;background:#fff3e0;border-radius:6px;border:1px dashed #0d9488">
+<b>${weekToChinese(w)}</b> <span style="color:#94a3b8;font-size:12px">(${w})</span> <span style="color:#94a3b8">未录入</span>
+</div>`;
+}
+});
+html+='</div>';
+// Group summary
+const byGroup={};allRecs.forEach(r=>{const g=r.group||'未分组';if(!byGroup[g])byGroup[g]=[];byGroup[g].push(r);});
+html+='<table class="data-table"><thead><tr><th>分组</th><th>接待量</th><th>平均响应</th><th>平均满意度</th><th>转化率</th><th>连带销售</th></tr></thead><tbody>';
+Object.entries(byGroup).forEach(([g,rr])=>{const sg=calcSummary(rr);html+=`<tr><td><b>${g}</b></td><td>${sg.totalService}</td><td>${sg.avgResponse}</td><td>${sg.avgSatisfaction}%</td><td style="color:${rateColor(sg.realRate)}">${sg.realRate}%</td><td>${sg.totalSales}元</td></tr>`;});
+html+=`</tbody></table>`;
+// Shop summary
+const byShop={};allRecs.forEach(r=>{if(!byShop[r.shop])byShop[r.shop]=[];byShop[r.shop].push(r);});
+html+='<table class="data-table" style="margin-top:12px"><thead><tr><th>店铺</th><th>接待量</th><th>平均响应</th><th>平均满意度</th><th>转化率</th><th>连带销售</th></tr></thead><tbody>';
+Object.entries(byShop).forEach(([sh,rr])=>{const sg=calcSummary(rr);html+=`<tr><td><b>${sh}</b></td><td>${sg.totalService}</td><td>${sg.avgResponse}</td><td>${sg.avgSatisfaction}%</td><td style="color:${rateColor(sg.realRate)}">${sg.realRate}%</td><td>${sg.totalSales}元</td></tr>`;});
+html+=`</tbody></table>`;
+html+=`<div style="margin-top:12px;padding:12px;background:#f8f9fa;border-radius:8px">
+<b>月汇总：</b>接待${s.totalService} | 平均响应${s.avgResponse}s | 满意度${s.avgSatisfaction}% | 转化${s.realRate}% | 连带${s.totalSales}元
+</div>`;
+el.innerHTML=html;
+}
+function exportHistoryWeeklyCSV(){
+const week=document.getElementById('historyWeekPicker').value;
+if(!week||!data.weeklyData[week]||!data.weeklyData[week].records){alert('无数据');return;}
+const wd=data.weeklyData[week];
+let csv='\uFEFF';const headers=['店铺','分组','客服','接待量','响应(秒)','满意度(%)','询单数','付款数','转化率(%)','连带销售额(元)','备注'];
+csv+=headers.join(',')+'\n';
+wd.records.forEach(r=>{csv+=`"${r.shop||''}","${r.group||''}","${r.staff||''}","${r.service||0}","${r.response||0}","${r.satisfaction||0}","${r.inquiry||0}","${r.payment||0}","${r.rate||0}","${r.sales||0}","${r.note||''}"\n`;const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='历史周报_'+week+'.csv';a.click();URL.revokeObjectURL(url);
+});
+}
+function exportHistoryMonthlyCSV(){
+const month=document.getElementById('historyMonthPicker').value;
+if(!month){alert('请选择月份');return;}
+const year=parseInt(month.split('-')[0]),m=parseInt(month.split('-')[1]);
+const weeks=getWeeksInMonth(year,m);
+let allRecs=[];
+weeks.forEach(w=>{if(data.weeklyData[w]&&data.weeklyData[w].records)allRecs=allRecs.concat(data.weeklyData[w].records);});
+if(!allRecs.length){alert('无数据');return;}
+let csv='\uFEFF';const headers=['周次','店铺','分组','客服','接待量','响应(秒)','满意度(%)','询单数','付款数','转化率(%)','连带销售额(元)','备注'];
+csv+=headers.join(',')+'\n';
+weeks.forEach(w=>{if(data.weeklyData[w]&&data.weeklyData[w].records){data.weeklyData[w].records.forEach(r=>{csv+=`"${w}","${r.shop||''}","${r.group||''}","${r.staff||''}","${r.service||0}","${r.response||0}","${r.satisfaction||0}","${r.inquiry||0}","${r.payment||0}","${r.rate||0}","${r.sales||0}","${r.note||''}"\n`;});}});
+const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='历史月报_'+year+'年'+m+'月.csv';a.click();URL.revokeObjectURL(url);
+}
+function validateAllData(){
+const el=document.getElementById('validateResult');
+let issues=[];
+// Check weekly data
+Object.entries(data.weeklyData).forEach(([week,wd])=>{
+if(!wd||!wd.records)return;
+wd.records.forEach((r,i)=>{
+if(r.service<0)issues.push({type:'error',msg:week+' '+r.shop+'-'+r.staff+'：接待量为负数'});
+if(r.response<0)issues.push({type:'error',msg:week+' '+r.shop+'-'+r.staff+'：响应时间为负数'});
+if(r.satisfaction<0||r.satisfaction>100)issues.push({type:'error',msg:week+' '+r.shop+'-'+r.staff+'：满意度超出0-100范围'});
+if(r.payment>r.service)issues.push({type:'warning',msg:week+' '+r.shop+'-'+r.staff+'：付款数('+r.payment+')大于接待量('+r.service+')'});
+if(r.inquiry>0&&r.payment>r.inquiry)issues.push({type:'warning',msg:week+' '+r.shop+'-'+r.staff+'：付款数('+r.payment+')大于询单数('+r.inquiry+')，转化率将大于100%'});
+const realRate=r.inquiry?round(r.payment/r.inquiry*100):0;
+if(r.rate>0&&Math.abs(r.rate-realRate)>1)issues.push({type:'info',msg:week+' '+r.shop+'-'+r.staff+'：录入转化率('+r.rate+'%)与计算值('+realRate+'%)不一致'});
+});
+});
+if(!issues.length){el.innerHTML='<div style="padding:20px;text-align:center;color:#10b981"><b>✅ 数据校验通过，未发现异常</b></div>';return;}
+let html='<div style="margin-bottom:12px"><b>发现 '+issues.length+' 条提醒</b></div>';
+const errors=issues.filter(x=>x.type==='error');
+const warnings=issues.filter(x=>x.type==='warning');
+const infos=issues.filter(x=>x.type==='info');
+if(errors.length){html+='<div style="color:#f43f5e;margin-bottom:8px"><b>错误 ('+errors.length+'条)</b></div>';errors.forEach(x=>html+='<div style="padding:6px 12px;background:#ffebee;border-radius:4px;margin-bottom:4px;font-size:13px">'+x.msg+'</div>');}
+if(warnings.length){html+='<div style="color:#f59e0b;margin-bottom:8px;margin-top:12px"><b>警告 ('+warnings.length+'条)</b></div>';warnings.forEach(x=>html+='<div style="padding:6px 12px;background:#fff8e1;border-radius:4px;margin-bottom:4px;font-size:13px">'+x.msg+'</div>');}
+if(infos.length){html+='<div style="color:#38bdf8;margin-bottom:8px;margin-top:12px"><b>提示 ('+infos.length+'条)</b></div>';infos.forEach(x=>html+='<div style="padding:6px 12px;background:#f0fdfa;border-radius:4px;margin-bottom:4px;font-size:13px">'+x.msg+'</div>');}
+el.innerHTML=html;
+}
+
+window.addEventListener('DOMContentLoaded',()=>{loadData();renderTemplates();renderSingleTasks();renderCalendar();});
+</script>
+</body>
+</html>
