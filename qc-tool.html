@@ -41,6 +41,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .paste-hint kbd{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;font-family:inherit;border:1px solid #e2e8f0}
 .paste-textarea{width:100%;min-height:60px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;resize:vertical;outline:none;font-family:inherit}
 .paste-textarea:focus{border-color:var(--primary)}
+.correct-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.correct-row .correct-item{flex:1}
+.correct-row .del-correct{background:var(--red);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.correct-row .del-correct:hover{opacity:.9}
 .paste-images{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .paste-img-box{position:relative;width:120px;height:120px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:center}
 .paste-img-box img{max-width:100%;max-height:100%;object-fit:contain}
@@ -324,8 +328,42 @@ body{background:#fff}
 <textarea class="paste-textarea" id="inpProblem" placeholder="详细描述问题所在..." style="min-height:80px"></textarea>
 </div>
 <div class="form-item">
-<label>正确做法 / 建议话术</label>
-<textarea class="paste-textarea" id="inpCorrect" placeholder="应该怎么说/怎么做..." style="min-height:80px"></textarea>
+<label>正确做法 / 建议话术 <span style="color:var(--text2);font-weight:400">(可添加多条，自动编号)</span></label>
+<div id="correctList">
+<div class="correct-row"><textarea class="paste-textarea correct-item" placeholder="第1条建议话术..." style="min-height:60px"></textarea></div>
+</div>
+<button class="btn btn-s" onclick="addCorrectRow()" style="margin-top:8px;font-size:12px;padding:6px 14px">➕ 添加话术</button>
+<div style="margin-top:8px">
+<label style="font-size:12px;color:#94a3b8">话术库：</label>
+<select id="phraseLib" onchange="insertPhrase(this)" style="padding:4px 8px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px">
+<option value="">-- 快速选择 --</option>
+<optgroup label="话术问题">
+<option value="建议使用更亲切的开场白，例如：'宝宝您好，欢迎光临~有什么可以帮您的吗？'">亲切开场白</option>
+<option value="推荐话术：'这款是我们家爆款哦，很多宝宝都回购了，您可以放心入手~'">推荐爆款话术</option>
+<option value="建议主动询问客户需求，不要等客户开口才回复">主动询问需求</option>
+</optgroup>
+<optgroup label="响应问题">
+<option value="首响需在30秒内回复，高峰期也要尽量控制在1分钟内">首响时效要求</option>
+<option value="客户问题较多时，建议逐条回复，避免遗漏">逐条回复</option>
+<option value="遇到复杂问题，先安抚客户：'稍等宝宝，我帮您确认一下'">安抚话术</option>
+</optgroup>
+<optgroup label="流程问题">
+<option value="引导客户下单前，需确认库存、规格、地址等信息">下单前确认</option>
+<option value="售后问题需先安抚情绪，再按流程处理：致歉→确认→解决→跟进">售后处理流程</option>
+<option value="退换货需主动提供退货地址和运费说明">退换货引导</option>
+</optgroup>
+<optgroup label="产品知识">
+<option value="客户问产品参数时，建议直接发送详情图或对照表">参数对照</option>
+<option value="推荐搭配时，可说明：'这款搭配XX一起买，很多客户反馈效果更好'">搭配推荐</option>
+<option value="遇到不了解的问题，不要猜测，及时转接或咨询后回复">不懂不猜</option>
+</optgroup>
+<optgroup label="态度问题">
+<option value="即使客户语气不好，也要保持耐心，不要争辩">保持耐心</option>
+<option value="多用表情符号和语气词，例如：'~' '哈' '呢'">语气词使用</option>
+<option value="客户表示不满时，先真诚道歉，再解决问题">先道歉再解决</option>
+</optgroup>
+</select>
+</div>
 </div>
 </div>
 
@@ -608,6 +646,36 @@ function toggleTag(el) {
   }
 }
 
+function addCorrectRow() {
+  const list = document.getElementById('correctList');
+  const n = list.querySelectorAll('.correct-row').length + 1;
+  const div = document.createElement('div');
+  div.className = 'correct-row';
+  div.innerHTML = '<textarea class="paste-textarea correct-item" placeholder="第' + n + '条建议话术..." style="min-height:60px"></textarea><button class="del-correct" onclick="this.parentElement.remove()">删除</button>';
+  list.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function insertPhrase(sel) {
+  const val = sel.value;
+  if (!val) return;
+  const items = document.querySelectorAll('.correct-item');
+  let added = false;
+  for (const ta of items) {
+    if (!ta.value.trim()) {
+      ta.value = val;
+      added = true;
+      break;
+    }
+  }
+  if (!added) {
+    addCorrectRow();
+    const last = document.querySelectorAll('.correct-item');
+    last[last.length - 1].value = val;
+  }
+  sel.value = '';
+}
+
 function setSeverity(btn, val) {
   document.querySelectorAll('#sevGroup .sev-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -622,7 +690,7 @@ function clearForm() {
   document.getElementById('inpScene').value = '';
   document.getElementById('inpReply').value = '';
   document.getElementById('inpProblem').value = '';
-  document.getElementById('inpCorrect').value = '';
+  document.getElementById('correctList').innerHTML = '<div class="correct-row"><textarea class="paste-textarea correct-item" placeholder="第1条建议话术..." style="min-height:60px"></textarea></div>';
   document.getElementById('inpNote').value = '';
   currentTags = [];
   document.querySelectorAll('#tagGroup .tag-item').forEach(t => t.classList.remove('active'));
@@ -640,7 +708,8 @@ async function addRecord() {
   const scene = document.getElementById('inpScene').value.trim();
   const reply = document.getElementById('inpReply').value.trim();
   const problem = document.getElementById('inpProblem').value.trim();
-  const correct = document.getElementById('inpCorrect').value.trim();
+  const correctItems = [...document.querySelectorAll('.correct-item')].map(t => t.value.trim()).filter(v => v);
+  const correct = correctItems.length ? correctItems.join('\n') : '';
   const note = document.getElementById('inpNote').value.trim();
 
   if (!staff) { alert('请输入客服姓名'); return; }
@@ -766,7 +835,7 @@ function renderRecords() {
         ${r.reply?`<div class="record-section"><div class="record-section-title">💬 客服回复</div><div class="record-section-text">${escapeHtml(r.reply)}</div></div>`:''}
         ${r.replyImages?.length?`<div class="record-section"><div class="record-section-title">📸 客服回复截图</div><div class="record-img-grid" id="replyImg_${r.id}"><div class="img-loading">加载中...</div></div></div>`:''}
         <div class="record-section"><div class="record-section-title">❌ 问题描述</div><div class="record-section-text" style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b">${escapeHtml(r.problem)}</div></div>
-        ${r.correct?`<div class="record-section"><div class="record-section-title">✅ 正确做法 / 建议</div><div class="record-section-text" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534">${escapeHtml(r.correct)}</div></div>`:''}
+        ${r.correct?`<div class="record-section"><div class="record-section-title">✅ 正确做法 / 建议</div><div class="record-section-text" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;white-space:pre-wrap">${escapeHtml(r.correct)}</div></div>`:''}
         ${r.note?`<div class="record-section"><div class="record-section-title">📝 备注</div><div class="record-section-text">${escapeHtml(r.note)}</div></div>`:''}
         ${r.coachDate?`<div class="record-section"><div class="record-section-title">📢 讲解记录</div><div class="record-section-text" style="background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e">📅 讲解日期：${r.coachDate}${r.coachNote?'<br>📝 讲解备注：'+escapeHtml(r.coachNote):''}</div></div>`:''}
       </div>
@@ -874,7 +943,7 @@ async function editRecord(id) {
     <div class="form-item"><label>客户问题</label><textarea class="paste-textarea" id="editScene">${r.scene||''}</textarea></div>
     <div class="form-item"><label>客服回复</label><textarea class="paste-textarea" id="editReply">${r.reply||''}</textarea></div>
     <div class="form-item"><label>问题描述</label><textarea class="paste-textarea" id="editProblem">${r.problem}</textarea></div>
-    <div class="form-item"><label>正确做法 / 建议</label><textarea class="paste-textarea" id="editCorrect">${r.correct||''}</textarea></div>
+    <div class="form-item"><label>正确做法 / 建议话术</label><textarea class="paste-textarea" id="editCorrect" style="min-height:120px">${r.correct||''}</textarea></div>
     <div class="form-item"><label>备注</label><input type="text" id="editNote" value="${r.note||''}"></div>
     <div class="form-grid">
       <div class="form-item"><label>讲解日期</label><input type="date" id="editCoachDate" value="${r.coachDate||''}"></div>
@@ -1002,7 +1071,7 @@ async function renderCoachSheet() {
       }
 
       html += `<div class="q">❌ 问题：${escapeHtml(r.problem)}</div>
-        ${r.correct?`<div class="a">✅ 正确做法：${escapeHtml(r.correct)}</div>`:''}
+        ${r.correct?`<div class="a" style="white-space:pre-wrap">✅ 正确做法：<br>${escapeHtml(r.correct)}</div>`:''}
         ${r.note?`<div class="d">📝 备注：${escapeHtml(r.note)}</div>`:''}
         <div style="margin-top:10px;padding:8px;background:#f0fdf4;border-radius:6px;border:1px dashed #86efac">
           <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">👤 客服确认签字：</div>
