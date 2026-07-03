@@ -383,7 +383,9 @@ body{background:#fff}
 <div class="panel-card">
 <div class="panel-header">
 <span>📋 质检记录列表</span>
-<div style="display:flex;gap:8px">
+<div style="display:flex;gap:8px;align-items:center">
+<span id="storageInfo" style="font-size:12px;color:#94a3b8"></span>
+<button class="btn btn-s" onclick="showStorageManager()" style="font-size:12px;padding:6px 14px">🧹 清理缓存</button>
 <button class="btn btn-i" onclick="openCoachMode()" style="font-size:12px;padding:6px 14px">🎯 讲解模式</button>
 <button class="btn btn-y" onclick="openAnalysisMode()" style="font-size:12px;padding:6px 14px">📊 质检分析</button>
 <button class="btn btn-s" onclick="exportRecords()" style="font-size:12px;padding:6px 14px">📤 导出CSV</button>
@@ -448,10 +450,12 @@ body{background:#fff}
 </div>
 
 <script>
-/* ==================== IndexedDB 图片存储 ==================== */
+/* ==================== IndexedDB 图片存储 + 压缩 ==================== */
 const DB_NAME = 'qc_img_db';
 const STORE_NAME = 'images';
 let db = null;
+const MAX_IMG_SIZE = 500 * 1024; // 500KB
+const IMG_QUALITY = 0.7;
 
 function openImgDB() {
   return new Promise((resolve, reject) => {
@@ -467,12 +471,37 @@ function openImgDB() {
   });
 }
 
+async function compressImage(blob) {
+  if (blob.size <= MAX_IMG_SIZE) return blob;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      const maxDim = 1920;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob((newBlob) => {
+        URL.revokeObjectURL(img.src);
+        resolve(newBlob || blob);
+      }, 'image/jpeg', IMG_QUALITY);
+    };
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
 async function saveImageToDB(id, blob) {
   if (!db) await openImgDB();
+  const compressed = await compressImage(blob);
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    store.put({ id, blob, time: Date.now() });
+    store.put({ id, blob: compressed, time: Date.now(), size: compressed.size });
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
@@ -491,12 +520,61 @@ async function getImageFromDB(id) {
 
 async function deleteImageFromDB(id) {
   if (!db) await openImgDB();
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
     store.delete(id);
     tx.oncomplete = () => resolve();
   });
+}
+
+async function getAllImageIds() {
+  if (!db) await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.getAllKeys();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getStorageInfo() {
+  if (!db) await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.openCursor();
+    let total = 0, count = 0;
+    req.onsuccess = (e) => {
+      const cursor = e.target.result;
+      if (cursor) {
+        total += (cursor.value.size || cursor.value.blob?.size || 0);
+        count++;
+        cursor.continue();
+      } else {
+        resolve({ count, total });
+      }
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function cleanupOrphanImages() {
+  const allIds = await getAllImageIds();
+  const usedIds = new Set();
+  for (const r of records) {
+    if (r.sceneImages) r.sceneImages.forEach(id => usedIds.add(id));
+    if (r.replyImages) r.replyImages.forEach(id => usedIds.add(id));
+  }
+  let deleted = 0;
+  for (const id of allIds) {
+    if (!usedIds.has(id)) {
+      await deleteImageFromDB(id);
+      deleted++;
+    }
+  }
+  return deleted;
 }
 
 async function blobToDataURL(blob) {
@@ -505,6 +583,30 @@ async function blobToDataURL(blob) {
     reader.onload = () => resolve(reader.result);
     reader.readAsDataURL(blob);
   });
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+async function updateStorageInfo() {
+  try {
+    const info = await getStorageInfo();
+    const el = document.getElementById('storageInfo');
+    if (el) el.textContent = `图片: ${info.count}张 / ${formatBytes(info.total)}`;
+  } catch (e) {}
+}
+
+async function showStorageManager() {
+  const info = await getStorageInfo();
+  const orphanCount = await cleanupOrphanImages();
+  const msg = `存储状态:\n\n📸 图片总数: ${info.count} 张\n💾 占用空间: ${formatBytes(info.total)}\n🧹 已清理孤儿图片: ${orphanCount} 张\n\n建议: 如果超过 50MB，可删除旧记录或导出后清空。`;
+  alert(msg);
+  updateStorageInfo();
 }
 
 /* ==================== 数据存储 ==================== */
@@ -535,6 +637,7 @@ function loadRecords() {
     updateStaffDatalist();
     updateFilterOptions();
     updateStats();
+    updateStorageInfo();
     renderRecords();
     setupPasteHandlers();
   });
@@ -600,8 +703,11 @@ function setupZone(zoneId, imgContainerId, type) {
   });
 }
 
+const pendingUrlMap = new Map();
+
 function renderPendingImage(container, id, blob, type) {
   const url = URL.createObjectURL(blob);
+  pendingUrlMap.set(id, url);
   const div = document.createElement('div');
   div.className = 'paste-img-box';
   div.dataset.imgId = id;
@@ -611,12 +717,16 @@ function renderPendingImage(container, id, blob, type) {
 
 function removePendingImage(id, type) {
   pendingImages[type] = pendingImages[type].filter(img => img.id !== id);
+  const url = pendingUrlMap.get(id);
+  if (url) { URL.revokeObjectURL(url); pendingUrlMap.delete(id); }
   const container = type === 'scene' ? document.getElementById('imgScene') : document.getElementById('imgReply');
   const el = container.querySelector(`[data-img-id="${id}"]`);
   if (el) el.remove();
 }
 
 function clearPendingImages() {
+  pendingUrlMap.forEach((url, id) => URL.revokeObjectURL(url));
+  pendingUrlMap.clear();
   pendingImages = { scene: [], reply: [] };
   document.getElementById('imgScene').innerHTML = '';
   document.getElementById('imgReply').innerHTML = '';
@@ -739,28 +849,41 @@ async function addRecord() {
 }
 
 /* ==================== 图片显示 ==================== */
+const imgUrlMap = new Map();
+
 async function renderRecordImages(container, imageIds) {
   if (!imageIds || !imageIds.length) return;
+  // 释放旧的 ObjectURL
+  const oldUrls = imgUrlMap.get(container.id);
+  if (oldUrls) oldUrls.forEach(u => URL.revokeObjectURL(u));
   container.innerHTML = '';
+  const urls = [];
   for (const id of imageIds) {
     const blob = await getImageFromDB(id);
     if (!blob) continue;
     const url = URL.createObjectURL(blob);
+    urls.push(url);
     const div = document.createElement('div');
     div.className = 'record-img-item';
     div.onclick = () => previewImage(url, id);
     div.innerHTML = `<img src="${url}" alt="" loading="lazy">`;
     container.appendChild(div);
   }
+  imgUrlMap.set(container.id, urls);
 }
 
 function previewImage(url, name) {
+  // 释放旧的预览URL
+  const old = document.getElementById('imgPreviewSrc').src;
+  if (old && old.startsWith('blob:')) URL.revokeObjectURL(old);
   document.getElementById('imgPreviewSrc').src = url;
   document.getElementById('imgPreviewName').textContent = name;
   document.getElementById('imgPreview').classList.add('active');
 }
 
 function closeImgPreview() {
+  const src = document.getElementById('imgPreviewSrc').src;
+  if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
   document.getElementById('imgPreview').classList.remove('active');
   document.getElementById('imgPreviewSrc').src = '';
 }
