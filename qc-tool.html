@@ -977,7 +977,14 @@ async function addRecord() {
   records.unshift(record);
   saveRecords();
   renderRecords();
+  
+  // 保留客服和店铺信息，方便连续录入同一人
+  const lastStaff = staff;
+  const lastShop = shop;
   clearForm();
+  document.getElementById('inpStaff').value = lastStaff;
+  document.getElementById('inpShop').value = lastShop;
+  
   alert('✅ 质检记录已保存');
 }
 
