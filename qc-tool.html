@@ -571,6 +571,7 @@ body{background:#fff}
 <button class="btn btn-i" onclick="openCoachMode()" style="font-size:12px;padding:6px 14px">🎯 讲解模式</button>
 <button class="btn btn-y" onclick="openAnalysisMode()" style="font-size:12px;padding:6px 14px">📊 质检分析</button>
 <button class="btn btn-s" onclick="exportRecords()" style="font-size:12px;padding:6px 14px">📤 导出CSV</button>
+<button class="btn btn-s" onclick="exportJSON()" style="font-size:12px;padding:6px 14px">📋 导出JSON</button>
 </div>
 </div>
 <div class="panel-body">
@@ -1878,6 +1879,24 @@ function exportRecords() {
   a.download = '质检记录_' + todayStr() + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function exportJSON() {
+  const list = getFilteredRecords();
+  if (!list.length) { alert('没有数据可导出'); return; }
+  const data = JSON.stringify(list, null, 2);
+  navigator.clipboard.writeText(data).then(() => {
+    alert('✅ 已复制 ' + list.length + ' 条记录到剪贴板！\n\n直接粘贴发给我即可分析。');
+  }).catch(() => {
+    // fallback
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '质检记录_' + todayStr() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 // 初始化
