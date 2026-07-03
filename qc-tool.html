@@ -1,3 +1,4 @@
+      
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -280,12 +281,12 @@ body{background:#fff}
 <div class="form-item" style="margin-bottom:16px">
 <label>问题分类 <span style="color:var(--red)">*</span></label>
 <div class="tag-group" id="tagGroup">
-<span class="tag-item" data-val="话术问题">话术问题</span>
-<span class="tag-item" data-val="响应问题">响应问题</span>
-<span class="tag-item" data-val="流程问题">流程问题</span>
-<span class="tag-item" data-val="态度问题">态度问题</span>
-<span class="tag-item" data-val="产品知识">产品知识</span>
-<span class="tag-item" data-val="其他">其他</span>
+<span class="tag-item" data-val="话术问题" onclick="toggleTag(this)">话术问题</span>
+<span class="tag-item" data-val="响应问题" onclick="toggleTag(this)">响应问题</span>
+<span class="tag-item" data-val="流程问题" onclick="toggleTag(this)">流程问题</span>
+<span class="tag-item" data-val="态度问题" onclick="toggleTag(this)">态度问题</span>
+<span class="tag-item" data-val="产品知识" onclick="toggleTag(this)">产品知识</span>
+<span class="tag-item" data-val="其他" onclick="toggleTag(this)">其他</span>
 </div>
 </div>
 
@@ -597,19 +598,16 @@ function updateStats() {
 }
 
 /* ==================== 表单交互 ==================== */
-const tagItems = document.querySelectorAll('#tagGroup .tag-item');
-tagItems.forEach(tag => {
-  tag.addEventListener('click', () => {
-    const val = tag.dataset.val;
-    if (tag.classList.contains('active')) {
-      tag.classList.remove('active');
-      currentTags = currentTags.filter(t => t !== val);
-    } else {
-      tag.classList.add('active');
-      currentTags.push(val);
-    }
-  });
-});
+function toggleTag(el) {
+  const val = el.dataset.val;
+  if (el.classList.contains('active')) {
+    el.classList.remove('active');
+    currentTags = currentTags.filter(t => t !== val);
+  } else {
+    el.classList.add('active');
+    currentTags.push(val);
+  }
+}
 
 function setSeverity(btn, val) {
   document.querySelectorAll('#sevGroup .sev-btn').forEach(b => b.classList.remove('active'));
@@ -628,7 +626,7 @@ function clearForm() {
   document.getElementById('inpCorrect').value = '';
   document.getElementById('inpNote').value = '';
   currentTags = [];
-  tagItems.forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#tagGroup .tag-item').forEach(t => t.classList.remove('active'));
   currentSeverity = '一般';
   document.querySelectorAll('#sevGroup .sev-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('#sevGroup .sev-btn[data-val="一般"]').classList.add('active');
@@ -1455,3 +1453,5 @@ window.addEventListener('DOMContentLoaded', loadRecords);
 </script>
 </body>
 </html>
+
+    
