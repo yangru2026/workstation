@@ -373,10 +373,10 @@ body{background:#fff}
 
 <!-- 产品知识点 -->
 <div class="form-item" style="margin-bottom:16px">
-<label>📚 产品知识点 / 销售技巧 <span style="color:var(--text2);font-weight:400">(可添加文字说明+截图)</span></label>
+<label>📚 产品知识点 / 销售技巧 / 销售意识 <span style="color:var(--text2);font-weight:400">(可添加文字说明+截图)</span></label>
 <div id="knowledgeList">
 <div class="knowledge-row">
-<textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、材质参数、适用人群等" style="min-height:60px"></textarea>
+<textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、销售技巧、销售意识等" style="min-height:60px"></textarea>
 </div>
 </div>
 <button class="btn btn-s" onclick="addKnowledgeRow()" style="margin-top:8px;font-size:12px;padding:6px 14px">➕ 添加知识点</button>
@@ -401,6 +401,22 @@ body{background:#fff}
 <optgroup label="护理/售后">
 <option value="新手客户必须强调：护理液每天换，镜片每天搓洗，盒子和镊子3个月一换。附护理视频或图文教程。">护理知识</option>
 <option value="佩戴不适常见原因：戴反了（边缘碗状 vs 碟状）、有异物、护理液残留、超时佩戴。逐一排查。">佩戴不适排查</option>
+</optgroup>
+<optgroup label="销售技巧">
+<option value="关联销售：客户买镜片时主动推荐护理液+镜盒+润眼液，'这套搭配很多客户一起买，护理更方便哦~'">关联销售技巧</option>
+<option value="老客户复购：'您之前买的XX款快到期了吧？现在回购送护理液，我帮您查一下？'">老客户复购引导</option>
+<option value="限时逼单：'今天活动最后一天，满199减30，帮您凑个单？'">限时促销逼单</option>
+<option value="异议处理：客户说贵时，'这款用的是硅水凝胶材质，透氧量是普通材质的3倍，对眼睛更健康~'">价格异议处理</option>
+<option value="晒图引导：成交后可以说'收到货后晒图评价，联系客服返5元红包哦~'">评价返现引导</option>
+<option value="私域引流：'加我微信，新品上架和限时活动第一时间通知您，还有专属折扣~'">微信私域引流</option>
+</optgroup>
+<optgroup label="销售意识">
+<option value="每个客户都要主动推荐：不要只回答客户问的问题，要主动推荐搭配产品和增值服务。">主动推荐意识</option>
+<option value="客户犹豫时要追问：'您是在纠结颜色还是度数呢？我可以给您建议~'"不要等客户自己决定。">追问促成意识</option>
+<option value="未成交也要加微信：即使客户这次没买，也要引导关注店铺或加微信，后续跟进。">潜在客户留存</option>
+<option value="高客单价优先推：客户预算充足时，优先推荐半年抛/硅水凝胶等高利润产品。">高客单意识</option>
+<option value="售后是二次销售机会：处理售后时态度要好，解决问题后推荐新品或优惠券。">售后转销售</option>
+<option value="数据复盘：每天下班前看自己的转化率、客单价，找出不足第二天改进。">每日复盘意识</option>
 </optgroup>
 </select>
 </div>
@@ -877,7 +893,7 @@ function clearForm() {
   document.getElementById('inpReply').value = '';
   document.getElementById('inpProblem').value = '';
   document.getElementById('correctList').innerHTML = '<div class="correct-row"><textarea class="paste-textarea correct-item" placeholder="第1条建议话术..." style="min-height:60px"></textarea></div>';
-  document.getElementById('knowledgeList').innerHTML = '<div class="knowledge-row"><textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、材质参数、适用人群等" style="min-height:60px"></textarea></div>';
+  document.getElementById('knowledgeList').innerHTML = '<div class="knowledge-row"><textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、销售技巧、销售意识等" style="min-height:60px"></textarea></div>';
   document.getElementById('imgKnowledge').innerHTML = '';
   document.getElementById('inpNote').value = '';
   currentTags = [];
