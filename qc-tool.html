@@ -1044,7 +1044,7 @@ function openAnalysisMode() {
   staffList.forEach(s => {
     const count = records.filter(r => r.staff === s).length;
     const pending = records.filter(r => r.staff === s && r.status === 'pending').length;
-    html += `<option value="${s}">${s} (共${count}条${pending?`，待讲'+pending+'条':''})</option>`;
+    html += '<option value="' + s + '">' + s + ' (共' + count + '条' + (pending ? '，待讲' + pending + '条' : '') + ')</option>';
   });
   html += '</select></div>';
   html += '<div id="analysisSheet"></div>';
