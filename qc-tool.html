@@ -45,6 +45,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .correct-row .correct-item{flex:1}
 .correct-row .del-correct{background:var(--red);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
 .correct-row .del-correct:hover{opacity:.9}
+.knowledge-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.knowledge-row .knowledge-item{flex:1}
+.knowledge-row .del-knowledge{background:var(--red);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.knowledge-row .del-knowledge:hover{opacity:.9}
 .paste-images{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .paste-img-box{position:relative;width:120px;height:120px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:center}
 .paste-img-box img{max-width:100%;max-height:100%;object-fit:contain}
@@ -367,6 +371,45 @@ body{background:#fff}
 </div>
 </div>
 
+<!-- 产品知识点 -->
+<div class="form-item" style="margin-bottom:16px">
+<label>📚 产品知识点 / 销售技巧 <span style="color:var(--text2);font-weight:400">(可添加文字说明+截图)</span></label>
+<div id="knowledgeList">
+<div class="knowledge-row">
+<textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、材质参数、适用人群等" style="min-height:60px"></textarea>
+</div>
+</div>
+<button class="btn btn-s" onclick="addKnowledgeRow()" style="margin-top:8px;font-size:12px;padding:6px 14px">➕ 添加知识点</button>
+<div style="margin-top:8px">
+<label style="font-size:12px;color:#94a3b8">知识库：</label>
+<select id="knowledgeLib" onchange="insertKnowledge(this)" style="padding:4px 8px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px">
+<option value="">-- 快速选择 --</option>
+<optgroup label="半年抛 vs 日抛">
+<option value="半年抛性价比更高，日均成本约0.5元，适合长期佩戴；日抛单价高但免护理，适合偶尔佩戴或旅行使用。建议：'您平时佩戴频率高的话，半年抛更划算哦~'">引导买半年抛</option>
+<option value="日抛虽然方便，但长期佩戴成本是半年抛的5-8倍。可以告诉客户：'半年抛每天才几毛钱，而且我们送护理液和镜盒，护理也很方便~'">日抛成本对比</option>
+<option value="半年抛材质更耐用，透氧量一般比日抛高，适合长时间佩戴；日抛含水量高，适合敏感眼但佩戴时间不宜过长。">材质区别讲解</option>
+</optgroup>
+<optgroup label="度数/参数">
+<option value="度数换算：隐形眼镜度数 = 框架度数 / (1 - 0.012 * 框架度数)。例如-4.00框架，隐形眼镜约-3.75。建议发给客户对照表。">度数换算方法</option>
+<option value="基弧(BC)选择：亚洲人常见8.4-8.6。太松会滑片，太紧会磨眼。可以问：'您之前戴的什么牌子？基弧多少？'">基弧选择</option>
+<option value="含水量不是越高越好！38%低含水适合干眼/长时间佩戴，55%+高含水适合短时间/敏感眼。">含水量误区</option>
+</optgroup>
+<optgroup label="颜色/直径">
+<option value="14.0-14.2mm属于自然款，14.5mm以上放大效果明显。建议根据客户眼型和日常妆容推荐。">直径选择建议</option>
+<option value="棕色/黑色最日常，灰色/混血色适合化妆。第一次买的客户建议推荐自然色系降低退货率。">颜色推荐逻辑</option>
+</optgroup>
+<optgroup label="护理/售后">
+<option value="新手客户必须强调：护理液每天换，镜片每天搓洗，盒子和镊子3个月一换。附护理视频或图文教程。">护理知识</option>
+<option value="佩戴不适常见原因：戴反了（边缘碗状 vs 碟状）、有异物、护理液残留、超时佩戴。逐一排查。">佩戴不适排查</option>
+</optgroup>
+</select>
+</div>
+<div class="paste-zone" id="zoneKnowledge" tabindex="0" style="margin-top:12px">
+<div class="paste-hint">💡 知识点配图区域：在此粘贴产品对比图、参数表、价格对比图等截图，或 <kbd>Ctrl+V</kbd> 粘贴 / <kbd>拖拽</kbd> 图片到此处</div>
+<div class="paste-images" id="imgKnowledge"></div>
+</div>
+</div>
+
 <div class="form-item" style="margin-bottom:8px">
 <label>备注（可选）</label>
 <input type="text" id="inpNote" placeholder="补充说明">
@@ -566,6 +609,7 @@ async function cleanupOrphanImages() {
   for (const r of records) {
     if (r.sceneImages) r.sceneImages.forEach(id => usedIds.add(id));
     if (r.replyImages) r.replyImages.forEach(id => usedIds.add(id));
+    if (r.knowledgeImages) r.knowledgeImages.forEach(id => usedIds.add(id));
   }
   let deleted = 0;
   for (const id of allIds) {
@@ -615,8 +659,8 @@ let records = [];
 let editingId = null;
 let currentSeverity = '一般';
 let currentTags = [];
-// 临时存储待提交的图片 {scene:[{id, blob}], reply:[{id, blob}]}
-let pendingImages = { scene: [], reply: [] };
+// 临时存储待提交的图片 {scene:[{id, blob}], reply:[{id, blob}], knowledge:[{id, blob}]}
+let pendingImages = { scene: [], reply: [], knowledge: [] };
 
 function formatDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -654,6 +698,7 @@ function saveRecords() {
 function setupPasteHandlers() {
   setupZone('zoneScene', 'imgScene', 'scene');
   setupZone('zoneReply', 'imgReply', 'reply');
+  setupZone('zoneKnowledge', 'imgKnowledge', 'knowledge');
 }
 
 function setupZone(zoneId, imgContainerId, type) {
@@ -727,9 +772,10 @@ function removePendingImage(id, type) {
 function clearPendingImages() {
   pendingUrlMap.forEach((url, id) => URL.revokeObjectURL(url));
   pendingUrlMap.clear();
-  pendingImages = { scene: [], reply: [] };
+  pendingImages = { scene: [], reply: [], knowledge: [] };
   document.getElementById('imgScene').innerHTML = '';
   document.getElementById('imgReply').innerHTML = '';
+  document.getElementById('imgKnowledge').innerHTML = '';
 }
 
 /* ==================== 统计 ==================== */
@@ -786,6 +832,36 @@ function insertPhrase(sel) {
   sel.value = '';
 }
 
+function addKnowledgeRow() {
+  const list = document.getElementById('knowledgeList');
+  const n = list.querySelectorAll('.knowledge-row').length + 1;
+  const div = document.createElement('div');
+  div.className = 'knowledge-row';
+  div.innerHTML = '<textarea class="paste-textarea knowledge-item" placeholder="第' + n + '条知识点..." style="min-height:60px"></textarea><button class="del-knowledge" onclick="this.parentElement.remove()">删除</button>';
+  list.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function insertKnowledge(sel) {
+  const val = sel.value;
+  if (!val) return;
+  const items = document.querySelectorAll('.knowledge-item');
+  let added = false;
+  for (const ta of items) {
+    if (!ta.value.trim()) {
+      ta.value = val;
+      added = true;
+      break;
+    }
+  }
+  if (!added) {
+    addKnowledgeRow();
+    const last = document.querySelectorAll('.knowledge-item');
+    last[last.length - 1].value = val;
+  }
+  sel.value = '';
+}
+
 function setSeverity(btn, val) {
   document.querySelectorAll('#sevGroup .sev-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -801,6 +877,8 @@ function clearForm() {
   document.getElementById('inpReply').value = '';
   document.getElementById('inpProblem').value = '';
   document.getElementById('correctList').innerHTML = '<div class="correct-row"><textarea class="paste-textarea correct-item" placeholder="第1条建议话术..." style="min-height:60px"></textarea></div>';
+  document.getElementById('knowledgeList').innerHTML = '<div class="knowledge-row"><textarea class="paste-textarea knowledge-item" placeholder="第1条知识点...例如：半年抛和日抛的区别、材质参数、适用人群等" style="min-height:60px"></textarea></div>';
+  document.getElementById('imgKnowledge').innerHTML = '';
   document.getElementById('inpNote').value = '';
   currentTags = [];
   document.querySelectorAll('#tagGroup .tag-item').forEach(t => t.classList.remove('active'));
@@ -820,6 +898,8 @@ async function addRecord() {
   const problem = document.getElementById('inpProblem').value.trim();
   const correctItems = [...document.querySelectorAll('.correct-item')].map(t => t.value.trim()).filter(v => v);
   const correct = correctItems.length ? correctItems.join('\n') : '';
+  const knowledgeItems = [...document.querySelectorAll('.knowledge-item')].map(t => t.value.trim()).filter(v => v);
+  const knowledge = knowledgeItems.length ? knowledgeItems.join('\n') : '';
   const note = document.getElementById('inpNote').value.trim();
 
   if (!staff) { alert('请输入客服姓名'); return; }
@@ -832,9 +912,10 @@ async function addRecord() {
     staff, customerId, shop, date: date || todayStr(),
     tags: [...currentTags],
     severity: currentSeverity,
-    scene, reply, problem, correct, note,
+    scene, reply, problem, correct, knowledge, note,
     sceneImages: pendingImages.scene.map(img => img.id),
     replyImages: pendingImages.reply.map(img => img.id),
+    knowledgeImages: pendingImages.knowledge.map(img => img.id),
     status: 'pending',
     coachDate: '',
     coachNote: '',
@@ -959,6 +1040,8 @@ function renderRecords() {
         ${r.replyImages?.length?`<div class="record-section"><div class="record-section-title">📸 客服回复截图</div><div class="record-img-grid" id="replyImg_${r.id}"><div class="img-loading">加载中...</div></div></div>`:''}
         <div class="record-section"><div class="record-section-title">❌ 问题描述</div><div class="record-section-text" style="background:#fff5f5;border:1px solid #fecaca;color:#991b1b">${escapeHtml(r.problem)}</div></div>
         ${r.correct?`<div class="record-section"><div class="record-section-title">✅ 正确做法 / 建议</div><div class="record-section-text" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;white-space:pre-wrap">${escapeHtml(r.correct)}</div></div>`:''}
+        ${r.knowledge?`<div class="record-section"><div class="record-section-title">📚 产品知识点 / 销售技巧</div><div class="record-section-text" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;white-space:pre-wrap">${escapeHtml(r.knowledge)}</div></div>`:''}
+        ${r.knowledgeImages?.length?`<div class="record-section"><div class="record-section-title">📸 知识点配图</div><div class="record-img-grid" id="knowledgeImg_${r.id}"><div class="img-loading">加载中...</div></div></div>`:''}
         ${r.note?`<div class="record-section"><div class="record-section-title">📝 备注</div><div class="record-section-text">${escapeHtml(r.note)}</div></div>`:''}
         ${r.coachDate?`<div class="record-section"><div class="record-section-title">📢 讲解记录</div><div class="record-section-text" style="background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e">📅 讲解日期：${r.coachDate}${r.coachNote?'<br>📝 讲解备注：'+escapeHtml(r.coachNote):''}</div></div>`:''}
       </div>
@@ -974,6 +1057,7 @@ function renderRecords() {
   list.forEach(r => {
     if (r.sceneImages?.length) renderRecordImages(document.getElementById('sceneImg_' + r.id), r.sceneImages);
     if (r.replyImages?.length) renderRecordImages(document.getElementById('replyImg_' + r.id), r.replyImages);
+    if (r.knowledgeImages?.length) renderRecordImages(document.getElementById('knowledgeImg_' + r.id), r.knowledgeImages);
   });
 }
 
@@ -1029,6 +1113,7 @@ async function deleteRecord(id) {
     // 删除关联图片
     if (r.sceneImages) for (const imgId of r.sceneImages) await deleteImageFromDB(imgId);
     if (r.replyImages) for (const imgId of r.replyImages) await deleteImageFromDB(imgId);
+    if (r.knowledgeImages) for (const imgId of r.knowledgeImages) await deleteImageFromDB(imgId);
   }
   records = records.filter(x => x.id !== id);
   saveRecords();
@@ -1067,6 +1152,7 @@ async function editRecord(id) {
     <div class="form-item"><label>客服回复</label><textarea class="paste-textarea" id="editReply">${r.reply||''}</textarea></div>
     <div class="form-item"><label>问题描述</label><textarea class="paste-textarea" id="editProblem">${r.problem}</textarea></div>
     <div class="form-item"><label>正确做法 / 建议话术</label><textarea class="paste-textarea" id="editCorrect" style="min-height:120px">${r.correct||''}</textarea></div>
+    <div class="form-item"><label>产品知识点 / 销售技巧</label><textarea class="paste-textarea" id="editKnowledge" style="min-height:120px">${r.knowledge||''}</textarea></div>
     <div class="form-item"><label>备注</label><input type="text" id="editNote" value="${r.note||''}"></div>
     <div class="form-grid">
       <div class="form-item"><label>讲解日期</label><input type="date" id="editCoachDate" value="${r.coachDate||''}"></div>
@@ -1108,6 +1194,7 @@ function saveEdit() {
   r.reply = document.getElementById('editReply').value.trim();
   r.problem = document.getElementById('editProblem').value.trim();
   r.correct = document.getElementById('editCorrect').value.trim();
+  r.knowledge = document.getElementById('editKnowledge').value.trim();
   r.note = document.getElementById('editNote').value.trim();
   r.coachDate = document.getElementById('editCoachDate').value;
   r.coachNote = document.getElementById('editCoachNote').value.trim();
@@ -1195,6 +1282,7 @@ async function renderCoachSheet() {
 
       html += `<div class="q">❌ 问题：${escapeHtml(r.problem)}</div>
         ${r.correct?`<div class="a" style="white-space:pre-wrap">✅ 正确做法：<br>${escapeHtml(r.correct)}</div>`:''}
+        ${r.knowledge?`<div class="a" style="white-space:pre-wrap;background:#eff6ff;border:1px dashed #bfdbfe;color:#1e40af">📚 知识点：<br>${escapeHtml(r.knowledge)}</div>`:''}
         ${r.note?`<div class="d">📝 备注：${escapeHtml(r.note)}</div>`:''}
         <div style="margin-top:10px;padding:8px;background:#f0fdf4;border-radius:6px;border:1px dashed #86efac">
           <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">👤 客服确认签字：</div>
@@ -1626,9 +1714,9 @@ function exportRecords() {
   const list = getFilteredRecords();
   if (!list.length) { alert('没有数据可导出'); return; }
   let csv = '\uFEFF';
-  csv += '客服,客户ID,店铺,日期,问题分类,严重程度,客户问题,客服回复,问题描述,正确做法,备注,状态,讲解日期,讲解备注,客户问题截图数,客服回复截图数\n';
+  csv += '客服,客户ID,店铺,日期,问题分类,严重程度,客户问题,客服回复,问题描述,正确做法,产品知识点,备注,状态,讲解日期,讲解备注,客户问题截图数,客服回复截图数,知识点配图数\n';
   list.forEach(r => {
-    csv += `"${r.staff}","${r.customerId||''}","${r.shop}","${r.date}","${r.tags.join('、')}","${r.severity}","${(r.scene||'').replace(/"/g,'""')}","${(r.reply||'').replace(/"/g,'""')}","${(r.problem||'').replace(/"/g,'""')}","${(r.correct||'').replace(/"/g,'""')}","${(r.note||'').replace(/"/g,'""')}","${r.status==='pending'?'待讲解':'已讲解'}","${r.coachDate||''}","${r.coachNote||''}","${r.sceneImages?.length||0}","${r.replyImages?.length||0}"\n`;
+    csv += `"${r.staff}","${r.customerId||''}","${r.shop}","${r.date}","${r.tags.join('、')}","${r.severity}","${(r.scene||'').replace(/"/g,'""')}","${(r.reply||'').replace(/"/g,'""')}","${(r.problem||'').replace(/"/g,'""')}","${(r.correct||'').replace(/"/g,'""')}","${(r.knowledge||'').replace(/"/g,'""')}","${(r.note||'').replace(/"/g,'""')}","${r.status==='pending'?'待讲解':'已讲解'}","${r.coachDate||''}","${r.coachNote||''}","${r.sceneImages?.length||0}","${r.replyImages?.length||0}","${r.knowledgeImages?.length||0}"\n`;
   });
   const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
