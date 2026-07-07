@@ -1460,7 +1460,7 @@ async function renderCoachSheet() {
 
 // 抽取单条记录渲染为复用函数
 async function renderCoachItem(r, index) {
-  let html = `<div class="coach-item">
+  let html = `<div class="coach-item" id="coach-item-${r.id}">
     <div style="display:flex;justify-content:space-between;margin-bottom:6px">
       <span style="font-size:12px;color:#94a3b8">#${index} | ${r.date} | ${r.shop}${r.customerId?' | 👤 '+r.customerId:''}</span>
       <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${r.severity==='一般'?'#fef3c7;color:#d97706':r.severity==='严重'?'#fee2e2;color:#dc2626':'#ede9fe;color:#7c3aed'};font-weight:600">${r.severity}</span>
@@ -1468,14 +1468,14 @@ async function renderCoachItem(r, index) {
     <div style="margin-bottom:6px"><span style="font-size:11px;color:#64748b">分类：</span>${r.tags.map(t => `<span style="font-size:11px;padding:1px 6px;border-radius:3px;background:#f1f5f9;margin-right:4px">${t}</span>`).join('')}</div>
     ${r.scene?`<div class="d" style="margin-bottom:6px"><b>场景：</b>${escapeHtml(r.scene)}</div>`:''}`;
 
-  // 加载客户问题截图
+  // 加载客户问题截图（点击放大）
   if (r.sceneImages?.length) {
-    html += `<div style="margin-bottom:6px"><b>📸 客户问题截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
+    html += `<div style="margin-bottom:6px"><b>📸 客户问题截图（点击放大）：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
     for (const imgId of r.sceneImages) {
       const blob = await getImageFromDB(imgId);
       if (blob) {
         const url = await blobToDataURL(blob);
-        html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
+        html += `<img src="${url}" onclick="coachPreviewImg('${url}','${imgId}')" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain;cursor:zoom-in" title="点击放大">`;
       }
     }
     html += `</div>`;
@@ -1483,14 +1483,14 @@ async function renderCoachItem(r, index) {
 
   html += `${r.reply?`<div class="d" style="margin-bottom:6px"><b>客服回复：</b>${escapeHtml(r.reply)}</div>`:''}`;
 
-  // 加载客服回复截图
+  // 加载客服回复截图（点击放大）
   if (r.replyImages?.length) {
-    html += `<div style="margin-bottom:6px"><b>📸 客服回复截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
+    html += `<div style="margin-bottom:6px"><b>📸 客服回复截图（点击放大）：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
     for (const imgId of r.replyImages) {
       const blob = await getImageFromDB(imgId);
       if (blob) {
         const url = await blobToDataURL(blob);
-        html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
+        html += `<img src="${url}" onclick="coachPreviewImg('${url}','${imgId}')" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain;cursor:zoom-in" title="点击放大">`;
       }
     }
     html += `</div>`;
@@ -1504,9 +1504,33 @@ async function renderCoachItem(r, index) {
       <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">👤 客服确认签字：</div>
       <div style="font-size:12px;color:#166534">本人已了解上述问题，承诺改正 □</div>
     </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn btn-g" onclick="coachMarkDone('${r.id}')" style="font-size:12px;padding:6px 14px">✅ 标记已讲解</button>
+      <button class="btn btn-i" onclick="editRecord('${r.id}')" style="font-size:12px;padding:6px 14px">✏️ 编辑</button>
+    </div>
   </div>`;
 
   return html;
+}
+
+// 讲解模式内图片预览（复用全局预览器）
+function coachPreviewImg(url, name) {
+  document.getElementById('imgPreviewSrc').src = url;
+  document.getElementById('imgPreviewName').textContent = name;
+  document.getElementById('imgPreview').classList.add('active');
+}
+
+// 讲解模式内标记已讲解 + 自动跳下一个
+function coachMarkDone(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const note = prompt('讲解备注（可选，如：客服已理解并承诺改正）：') || '';
+  r.status = 'done';
+  r.coachDate = todayStr();
+  r.coachNote = note;
+  saveRecords();
+  // 重新渲染讲解单，自动显示下一个
+  renderCoachSheet();
 }
 
 function closeCoachModal() {
