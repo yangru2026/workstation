@@ -1374,6 +1374,7 @@ function openCoachMode() {
 
   let html = '<div style="margin-bottom:16px"><label style="font-size:13px;font-weight:500;color:#475569">选择要讲解的客服：</label><select id="coachStaffSelect" onchange="renderCoachSheet()" style="margin-left:8px;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px">';
   html += '<option value="">-- 请选择 --</option>';
+  html += `<option value="_all_">📋 全部客服 (${records.filter(r=>r.status==='pending').length}条待讲)</option>`;
   staffList.forEach(s => html += `<option value="${s}">${s} (${records.filter(r=>r.staff===s&&r.status==='pending').length}条待讲)</option>`);
   html += '</select></div>';
   html += '<div id="coachSheet"></div>';
@@ -1386,6 +1387,46 @@ async function renderCoachSheet() {
   const el = document.getElementById('coachSheet');
   if (!staff) { el.innerHTML = ''; return; }
 
+  // ===== 全部客服模式 =====
+  if (staff === '_all_') {
+    const pendingList = records.filter(r => r.status === 'pending').sort((a,b) => b.date.localeCompare(a.date));
+    const doneList = records.filter(r => r.status === 'done').sort((a,b) => b.date.localeCompare(a.date));
+    const allStaff = [...new Set(pendingList.map(r => r.staff))].sort();
+
+    let html = `<div style="text-align:center;margin-bottom:20px">
+      <h2 style="color:var(--primary);margin-bottom:4px">📋 全部客服 — 质检问题讲解单</h2>
+      <p style="color:#94a3b8;font-size:13px">生成日期：${todayStr()} | 共 ${pendingList.length} 条待讲解 | 涉及 ${allStaff.length} 位客服</p>
+    </div>`;
+
+    // 按客服分组展示
+    for (const s of allStaff) {
+      const list = pendingList.filter(r => r.staff === s);
+      html += `<div class="coach-card"><h4>👤 ${s} — ${list.length} 条待讲</h4>`;
+      for (let i = 0; i < list.length; i++) {
+        const r = list[i];
+        html += await renderCoachItem(r, i + 1);
+      }
+      html += '</div>';
+    }
+
+    // 已讲解参考（最近5条）
+    if (doneList.length) {
+      html += '<div class="coach-card"><h4>✅ 已讲解问题（参考）</h4>';
+      doneList.slice(0, 5).forEach(r => {
+        html += `<div class="coach-item" style="opacity:.7">
+          <div style="font-size:12px;color:#94a3b8">${r.date} | ${r.staff} | ${r.shop} | ${r.tags.join('、')}</div>
+          <div class="q">${escapeHtml(r.problem)}</div>
+          ${r.coachDate?`<div class="d">📅 讲解于 ${r.coachDate}${r.coachNote?' · '+escapeHtml(r.coachNote):''}</div>`:''}
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    el.innerHTML = html;
+    return;
+  }
+
+  // ===== 单个客服模式（原有逻辑） =====
   const list = records.filter(r => r.staff === staff && r.status === 'pending').sort((a,b) => b.date.localeCompare(a.date));
   const doneList = records.filter(r => r.staff === staff && r.status === 'done').sort((a,b) => b.date.localeCompare(a.date));
 
@@ -1397,52 +1438,7 @@ async function renderCoachSheet() {
   if (list.length) {
     html += '<div class="coach-card"><h4>📋 待讲解问题</h4>';
     for (let i = 0; i < list.length; i++) {
-      const r = list[i];
-      html += `<div class="coach-item">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <span style="font-size:12px;color:#94a3b8">#${i+1} | ${r.date} | ${r.shop}${r.customerId?' | 👤 '+r.customerId:''}</span>
-          <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${r.severity==='一般'?'#fef3c7;color:#d97706':r.severity==='严重'?'#fee2e2;color:#dc2626':'#ede9fe;color:#7c3aed'};font-weight:600">${r.severity}</span>
-        </div>
-        <div style="margin-bottom:6px"><span style="font-size:11px;color:#64748b">分类：</span>${r.tags.map(t => `<span style="font-size:11px;padding:1px 6px;border-radius:3px;background:#f1f5f9;margin-right:4px">${t}</span>`).join('')}</div>
-        ${r.scene?`<div class="d" style="margin-bottom:6px"><b>场景：</b>${escapeHtml(r.scene)}</div>`:''}`;
-
-      // 加载客户问题截图
-      if (r.sceneImages?.length) {
-        html += `<div style="margin-bottom:6px"><b>📸 客户问题截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
-        for (const imgId of r.sceneImages) {
-          const blob = await getImageFromDB(imgId);
-          if (blob) {
-            const url = await blobToDataURL(blob);
-            html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
-          }
-        }
-        html += `</div>`;
-      }
-
-      html += `${r.reply?`<div class="d" style="margin-bottom:6px"><b>客服回复：</b>${escapeHtml(r.reply)}</div>`:''}`;
-
-      // 加载客服回复截图
-      if (r.replyImages?.length) {
-        html += `<div style="margin-bottom:6px"><b>📸 客服回复截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
-        for (const imgId of r.replyImages) {
-          const blob = await getImageFromDB(imgId);
-          if (blob) {
-            const url = await blobToDataURL(blob);
-            html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
-          }
-        }
-        html += `</div>`;
-      }
-
-      html += `<div class="q">❌ 问题：${escapeHtml(r.problem)}</div>
-        ${r.correct?`<div class="a">✅ 正确做法：<br>${formatNumberedHtml(r.correct)}</div>`:''}
-        ${r.knowledge?`<div class="a" style="background:#eff6ff;border:1px dashed #bfdbfe;color:#1e40af">📚 知识点：<br>${formatNumberedHtml(r.knowledge)}</div>`:''}
-        ${r.note?`<div class="d">📝 备注：${escapeHtml(r.note)}</div>`:''}
-        <div style="margin-top:10px;padding:8px;background:#f0fdf4;border-radius:6px;border:1px dashed #86efac">
-          <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">👤 客服确认签字：</div>
-          <div style="font-size:12px;color:#166534">本人已了解上述问题，承诺改正 □</div>
-        </div>
-      </div>`;
+      html += await renderCoachItem(list[i], i + 1);
     }
     html += '</div>';
   }
@@ -1460,6 +1456,57 @@ async function renderCoachSheet() {
   }
 
   el.innerHTML = html;
+}
+
+// 抽取单条记录渲染为复用函数
+async function renderCoachItem(r, index) {
+  let html = `<div class="coach-item">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:12px;color:#94a3b8">#${index} | ${r.date} | ${r.shop}${r.customerId?' | 👤 '+r.customerId:''}</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${r.severity==='一般'?'#fef3c7;color:#d97706':r.severity==='严重'?'#fee2e2;color:#dc2626':'#ede9fe;color:#7c3aed'};font-weight:600">${r.severity}</span>
+    </div>
+    <div style="margin-bottom:6px"><span style="font-size:11px;color:#64748b">分类：</span>${r.tags.map(t => `<span style="font-size:11px;padding:1px 6px;border-radius:3px;background:#f1f5f9;margin-right:4px">${t}</span>`).join('')}</div>
+    ${r.scene?`<div class="d" style="margin-bottom:6px"><b>场景：</b>${escapeHtml(r.scene)}</div>`:''}`;
+
+  // 加载客户问题截图
+  if (r.sceneImages?.length) {
+    html += `<div style="margin-bottom:6px"><b>📸 客户问题截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
+    for (const imgId of r.sceneImages) {
+      const blob = await getImageFromDB(imgId);
+      if (blob) {
+        const url = await blobToDataURL(blob);
+        html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
+      }
+    }
+    html += `</div>`;
+  }
+
+  html += `${r.reply?`<div class="d" style="margin-bottom:6px"><b>客服回复：</b>${escapeHtml(r.reply)}</div>`:''}`;
+
+  // 加载客服回复截图
+  if (r.replyImages?.length) {
+    html += `<div style="margin-bottom:6px"><b>📸 客服回复截图：</b></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">`;
+    for (const imgId of r.replyImages) {
+      const blob = await getImageFromDB(imgId);
+      if (blob) {
+        const url = await blobToDataURL(blob);
+        html += `<img src="${url}" style="max-width:300px;max-height:200px;border-radius:6px;border:1px solid #e2e8f0;object-fit:contain">`;
+      }
+    }
+    html += `</div>`;
+  }
+
+  html += `<div class="q">❌ 问题：${escapeHtml(r.problem)}</div>
+    ${r.correct?`<div class="a">✅ 正确做法：<br>${formatNumberedHtml(r.correct)}</div>`:''}
+    ${r.knowledge?`<div class="a" style="background:#eff6ff;border:1px dashed #bfdbfe;color:#1e40af">📚 知识点：<br>${formatNumberedHtml(r.knowledge)}</div>`:''}
+    ${r.note?`<div class="d">📝 备注：${escapeHtml(r.note)}</div>`:''}
+    <div style="margin-top:10px;padding:8px;background:#f0fdf4;border-radius:6px;border:1px dashed #86efac">
+      <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">👤 客服确认签字：</div>
+      <div style="font-size:12px;color:#166534">本人已了解上述问题，承诺改正 □</div>
+    </div>
+  </div>`;
+
+  return html;
 }
 
 function closeCoachModal() {
