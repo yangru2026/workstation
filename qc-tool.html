@@ -629,7 +629,7 @@ body{background:#fff}
 <div class="img-preview-overlay" id="imgPreview" onclick="closeImgPreview()">
 <div style="position:absolute;top:20px;left:20px;right:60px;display:flex;align-items:center;gap:12px;pointer-events:none">
 <span id="imgZoomLabel" style="background:rgba(0,0,0,.6);color:#fff;padding:4px 12px;border-radius:4px;font-size:13px;font-family:monospace">100%</span>
-<span style="color:rgba(255,255,255,.6);font-size:12px">滚轮缩放 · 拖拽移动 · 双击还原</span>
+<span style="color:rgba(255,255,255,.6);font-size:12px">Ctrl+滚轮缩放 · 拖拽移动 · 双击还原</span>
 </div>
 <button class="img-preview-close" onclick="closeImgPreview()">×</button>
 <div id="imgPreviewWrapper" style="overflow:hidden;width:90%;height:80vh;display:flex;align-items:center;justify-content:center;cursor:grab" onmousedown="imgDragStart(event)" ontouchstart="imgDragStart(event)">
@@ -1149,6 +1149,7 @@ function updateImgTransform() {
 }
 
 function imgWheelZoom(e) {
+  if (!e.ctrlKey && !e.metaKey) return; // 只有按住Ctrl时才缩放，否则正常滚动
   e.preventDefault();
   const delta = e.deltaY > 0 ? -0.15 : 0.15;
   const oldScale = imgZoomScale;
