@@ -627,8 +627,14 @@ body{background:#fff}
 
 <!-- 图片预览 -->
 <div class="img-preview-overlay" id="imgPreview" onclick="closeImgPreview()">
+<div style="position:absolute;top:20px;left:20px;right:60px;display:flex;align-items:center;gap:12px;pointer-events:none">
+<span id="imgZoomLabel" style="background:rgba(0,0,0,.6);color:#fff;padding:4px 12px;border-radius:4px;font-size:13px;font-family:monospace">100%</span>
+<span style="color:rgba(255,255,255,.6);font-size:12px">滚轮缩放 · 拖拽移动 · 双击还原</span>
+</div>
 <button class="img-preview-close" onclick="closeImgPreview()">×</button>
-<img id="imgPreviewSrc" src="" alt="">
+<div id="imgPreviewWrapper" style="overflow:hidden;width:90%;height:80vh;display:flex;align-items:center;justify-content:center;cursor:grab" onmousedown="imgDragStart(event)" ontouchstart="imgDragStart(event)">
+<img id="imgPreviewSrc" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;transition:transform .1s ease;transform-origin:center center">
+</div>
 <div class="img-preview-name" id="imgPreviewName"></div>
 </div>
 
@@ -1100,13 +1106,28 @@ async function renderRecordImages(container, imageIds) {
   imgUrlMap.set(container.id, urls);
 }
 
+/* ==================== 图片预览（含滚轮缩放+拖拽） ==================== */
+let imgZoomScale = 1;
+let imgZoomMin = 0.5;
+let imgZoomMax = 5;
+let imgIsDragging = false;
+let imgDragStartX = 0, imgDragStartY = 0;
+let imgTranslateX = 0, imgTranslateY = 0;
+
 function previewImage(url, name) {
   // 释放旧的预览URL
   const old = document.getElementById('imgPreviewSrc').src;
   if (old && old.startsWith('blob:')) URL.revokeObjectURL(old);
   document.getElementById('imgPreviewSrc').src = url;
   document.getElementById('imgPreviewName').textContent = name;
+  // reset zoom
+  imgZoomScale = 1; imgTranslateX = 0; imgTranslateY = 0;
+  updateImgTransform();
   document.getElementById('imgPreview').classList.add('active');
+  // attach wheel
+  const wrapper = document.getElementById('imgPreviewWrapper');
+  wrapper.addEventListener('wheel', imgWheelZoom, {passive:false});
+  wrapper.addEventListener('dblclick', imgDblClick);
 }
 
 function closeImgPreview() {
@@ -1114,6 +1135,72 @@ function closeImgPreview() {
   if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
   document.getElementById('imgPreview').classList.remove('active');
   document.getElementById('imgPreviewSrc').src = '';
+  imgZoomScale = 1; imgTranslateX = 0; imgTranslateY = 0;
+  updateImgTransform();
+  const wrapper = document.getElementById('imgPreviewWrapper');
+  wrapper.removeEventListener('wheel', imgWheelZoom);
+  wrapper.removeEventListener('dblclick', imgDblClick);
+}
+
+function updateImgTransform() {
+  const img = document.getElementById('imgPreviewSrc');
+  img.style.transform = `translate(${imgTranslateX}px, ${imgTranslateY}px) scale(${imgZoomScale})`;
+  document.getElementById('imgZoomLabel').textContent = Math.round(imgZoomScale * 100) + '%';
+}
+
+function imgWheelZoom(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.15 : 0.15;
+  const oldScale = imgZoomScale;
+  imgZoomScale = Math.max(imgZoomMin, Math.min(imgZoomMax, imgZoomScale + delta));
+  if (imgZoomScale !== oldScale) {
+    updateImgTransform();
+  }
+}
+
+function imgDblClick(e) {
+  e.stopPropagation();
+  imgZoomScale = 1; imgTranslateX = 0; imgTranslateY = 0;
+  updateImgTransform();
+}
+
+function imgDragStart(e) {
+  if (imgZoomScale <= 1) return; // 只有放大后才允许拖拽
+  imgIsDragging = true;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  imgDragStartX = clientX - imgTranslateX;
+  imgDragStartY = clientY - imgTranslateY;
+  document.getElementById('imgPreviewWrapper').style.cursor = 'grabbing';
+  // bind move/up
+  document.addEventListener('mousemove', imgDragMove);
+  document.addEventListener('mouseup', imgDragEnd);
+  document.addEventListener('touchmove', imgDragMove, {passive:false});
+  document.addEventListener('touchend', imgDragEnd);
+}
+
+function imgDragMove(e) {
+  if (!imgIsDragging) return;
+  e.preventDefault();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  imgTranslateX = clientX - imgDragStartX;
+  imgTranslateY = clientY - imgDragStartY;
+  updateImgTransform();
+}
+
+function imgDragEnd() {
+  imgIsDragging = false;
+  document.getElementById('imgPreviewWrapper').style.cursor = 'grab';
+  document.removeEventListener('mousemove', imgDragMove);
+  document.removeEventListener('mouseup', imgDragEnd);
+  document.removeEventListener('touchmove', imgDragMove);
+  document.removeEventListener('touchend', imgDragEnd);
+}
+
+// 讲解模式内图片预览（复用全局预览器）
+function coachPreviewImg(url, name) {
+  previewImage(url, name);
 }
 
 /* ==================== 筛选与列表 ==================== */
@@ -1511,13 +1598,6 @@ async function renderCoachItem(r, index) {
   </div>`;
 
   return html;
-}
-
-// 讲解模式内图片预览（复用全局预览器）
-function coachPreviewImg(url, name) {
-  document.getElementById('imgPreviewSrc').src = url;
-  document.getElementById('imgPreviewName').textContent = name;
-  document.getElementById('imgPreview').classList.add('active');
 }
 
 // 讲解模式内标记已讲解 + 自动跳下一个
