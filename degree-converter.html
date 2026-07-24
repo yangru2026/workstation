@@ -1,3 +1,4 @@
+      
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -13,9 +14,6 @@
             min-height: 100vh;
             padding: 16px;
             color: #333;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
         }
         .container {
             max-width: 600px;
@@ -308,54 +306,6 @@
         .modal-text { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 20px; }
         .modal-btn { padding: 10px 32px; background: #7ba7a6; color: white; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .watermark { position: fixed; bottom: 10px; right: 10px; font-size: 11px; color: rgba(95, 181, 165, 0.3); pointer-events: none; z-index: 9999; }
-            /* FAQ sidebar */
-        .faq-sidebar {
-            width: 220px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 16px;
-        }
-        .faq-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .faq-card h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #3d5a4d;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f0e8e0;
-        }
-        .faq-item { margin-bottom: 10px; }
-        .faq-q {
-            font-size: 12px;
-            font-weight: 600;
-            color: #7ba7a6;
-            margin-bottom: 4px;
-        }
-        .faq-a {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-        .faq-tip {
-            background: #f5faf8;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.6;
-        }
-        .faq-tip strong { color: #3d5a4d; }
-        @media (max-width: 960px) {
-            body { flex-direction: column; align-items: center; }
-            .faq-sidebar { width: 100%; max-width: 600px; }
-        }
     </style>
 </head>
 <body>
@@ -373,30 +323,6 @@
 
     <div class="watermark" id="watermark">弥生 内部工具</div>
 
-    <div class="faq-sidebar" id="faq-left">
-    <div class="faq-card">
-        <h3>馃挕 甯歌闂</h3>
-        <div class="faq-item">
-            <div class="faq-q">Q: 宸﹀彸鐪煎害鏁颁笉鍚屾€庝箞閫夛紵</div>
-            <div class="faq-a">A: 宸﹀彸鐪煎垎鍒€夋嫨瀵瑰簲鐨勫害鏁帮紝涓嶈鍙栧钩鍧囧€笺€?/div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Q: 鏁ｅ厜瓒呰繃200搴︽€庝箞鍔烇紵</div>
-            <div class="faq-a">A: 寤鸿瀹氬埗鏁ｅ厜鐗囷紝鏅€氱編鐬冲彲鑳芥棤娉曠煫姝ｃ€?/div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Q: 娌℃湁鏁ｅ厜鎬庝箞濉紵</div>
-            <div class="faq-a">A: 鏁ｅ厜濉?鍗冲彲锛屽彧濉繎瑙嗗害鏁般€?/div>
-        </div>
-    </div>
-    <div class="faq-tip">
-        <strong>鎹㈢畻瑙勫垯閫熻锛?/strong><br>
-        杩戣搴︽暟 鈮?400锛氬師搴︽暟<br>
-        400-500锛氬噺25搴?br>
-        500-700锛氬噺50搴?br>
-        700-900锛氬噺75搴?br>
-        900浠ヤ笂锛氬噺100搴?    </div>
-</div>
     <div class="container">
 
         <div class="brand-switch">
@@ -452,13 +378,13 @@
                 <div class="eye-input-row">
                     <label>近视</label>
                     <button class="btn-minus" onclick="adjust('r-myopia', -25)">−</button>
-                    <input type="number" class="degree-input" id="r-myopia" value="0" onchange="calculate()">
+                    <input type="number" class="degree-input" id="r-myopia" placeholder="0" onchange="calculate()" onblur="focusNext(this)">
                     <button class="btn-plus" onclick="adjust('r-myopia', 25)">+</button>
                 </div>
                 <div class="eye-input-row">
                     <label>散光</label>
                     <button class="btn-minus" onclick="adjust('r-astigmatism', -25)">−</button>
-                    <input type="number" class="degree-input" id="r-astigmatism" value="0" onchange="calculate()">
+                    <input type="number" class="degree-input" id="r-astigmatism" placeholder="0" onchange="calculate()" onblur="focusNext(this)">
                     <button class="btn-plus" onclick="adjust('r-astigmatism', 25)">+</button>
                 </div>
                 <div class="eye-result">建议 <span id="r-result">0</span> 度</div>
@@ -470,13 +396,13 @@
                 <div class="eye-input-row">
                     <label>近视</label>
                     <button class="btn-minus" onclick="adjust('l-myopia', -25)">−</button>
-                    <input type="number" class="degree-input" id="l-myopia" value="0" onchange="calculate()">
+                    <input type="number" class="degree-input" id="l-myopia" placeholder="0" onchange="calculate()" onblur="focusNext(this)">
                     <button class="btn-plus" onclick="adjust('l-myopia', 25)">+</button>
                 </div>
                 <div class="eye-input-row">
                     <label>散光</label>
                     <button class="btn-minus" onclick="adjust('l-astigmatism', -25)">−</button>
-                    <input type="number" class="degree-input" id="l-astigmatism" value="0" onchange="calculate()">
+                    <input type="number" class="degree-input" id="l-astigmatism" placeholder="0" onchange="calculate()">
                     <button class="btn-plus" onclick="adjust('l-astigmatism', 25)">+</button>
                 </div>
                 <div class="eye-result">建议 <span id="l-result">0</span> 度</div>
@@ -536,6 +462,26 @@
             calculate();
         }
 
+        // 输入框获得焦点时自动选中内容
+        document.querySelectorAll('.degree-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.select();
+            });
+        });
+
+        function focusNext(input) {
+            if (input.id === 'r-myopia') {
+                const next = document.getElementById('r-astigmatism');
+                if (!next.value) next.focus();
+            } else if (input.id === 'r-astigmatism') {
+                const next = document.getElementById('l-myopia');
+                if (!next.value) next.focus();
+            } else if (input.id === 'l-myopia') {
+                const next = document.getElementById('l-astigmatism');
+                if (!next.value) next.focus();
+            }
+        }
+
         function convertDegree(totalDegree) {
             if (totalDegree <= 400) return totalDegree;
             else if (totalDegree <= 500) return totalDegree - 25;
@@ -555,7 +501,7 @@
                     const diff = STANDARD_DEGREES[i + 1] - STANDARD_DEGREES[i];
                     const mid = diff / 2;
                     const dist = raw - STANDARD_DEGREES[i];
-                    return dist < mid ? STANDARD_DEGREES[i] : STANDARD_DEGREES[i + 1];
+                    return dist <= mid ? STANDARD_DEGREES[i] : STANDARD_DEGREES[i + 1];
                 }
             }
             return 800;
@@ -587,16 +533,7 @@
             document.getElementById('l-result').textContent = lResult;
             document.getElementById('final-r').textContent = rResult;
             document.getElementById('final-l').textContent = lResult;
-        }
 
-        function switchBrand(brand) {
-            currentBrand = brand;
-            document.getElementById('brandName').textContent = brand;
-            document.getElementById('watermark').textContent = brand + ' 内部工具';
-            document.title = brand + ' 度数换算';
-            document.querySelectorAll('.brand-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === brand);
-            });
         }
 
         function showModal() { document.getElementById('astig-modal').classList.add('show'); }
@@ -974,6 +911,14 @@
             setVal('r-astigmatism', data.rAstig);
             setVal('l-myopia', data.lMyopia);
             setVal('l-astigmatism', data.lAstig);
+            // 自动跳转焦点
+            setTimeout(() => {
+                if (data.lMyopia === null && data.lAstig === null) {
+                    document.getElementById('l-myopia').focus();
+                } else if (data.lMyopia !== null && data.lAstig === null) {
+                    document.getElementById('l-astigmatism').focus();
+                }
+            }, 100);
             return { hasInvalid, hasAstigCapped: cappedEyes.length > 0, cappedEyes };
         }
 
@@ -997,7 +942,7 @@
 
         function clearAll() {
             ['r-myopia', 'r-astigmatism', 'l-myopia', 'l-astigmatism'].forEach(id => {
-                document.getElementById(id).value = 0;
+                document.getElementById(id).value = '';
             });
             document.getElementById('r-result').textContent = '0';
             document.getElementById('l-result').textContent = '0';
@@ -1051,25 +996,7 @@
         }
 
     </script>
-<div class="faq-sidebar" id="faq-right">
-    <div class="faq-card">
-        <h3>馃搵 甯歌璇濇湳</h3>
-        <div class="faq-item">
-            <div class="faq-q">瀹㈡埛闂細搴︽暟鎬庝箞閫夛紵</div>
-            <div class="faq-a">浜诧紝杩戣搴︽暟鈮?00閫夊師搴︽暟锛?00-500鍑?5搴︼紝500浠ヤ笂姣忓鍔?00鍑?5搴﹀摝~</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">瀹㈡埛闂細鏈夋暎鍏夎兘鎴村悧锛?/div>
-            <div class="faq-a">鏁ｅ厜150搴︿互鍐呭彲浠ユ崲绠楋紝瓒呰繃200搴﹀缓璁畾鍒舵暎鍏夌墖銆?/div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">瀹㈡埛闂細宸﹀彸鐪间笉鍚屾€庝箞鍔烇紵</div>
-            <div class="faq-a">鍙互鎸夊乏鍙崇溂鍒嗗埆閫夋嫨涓嶅悓搴︽暟涓嬪崟锛屼笅鍗曟椂澶囨敞鍗冲彲銆?/div>
-        </div>
-    </div>
-    <div class="faq-tip">
-        <strong>娉ㄦ剰锛?/strong><br>
-        鎹㈢畻缁撴灉浠呬緵鍙傝€冿紝寤鸿瀹㈡埛浠ラ獙鍏夊崟涓哄噯锛岄娆′僵鎴村缓璁挩璇笓涓氶獙鍏夊笀銆?    </div>
-</div>
 </body>
 </html>
+
+    
